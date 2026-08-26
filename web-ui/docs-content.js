@@ -401,5 +401,185 @@ window.DOCS = {
         },
       ],
     },
+    {
+      id: "seguranca",
+      titulo: "Segurança",
+      artigos: [
+        {
+          id: "seguranca-geral",
+          titulo: "Segurança: o que foi implementado",
+          atualizado: "26 de ago de 2026",
+          aviso:
+            "Este é um desafio técnico, não um sistema em produção real - a seção \"Limitações " +
+            "conhecidas\" no fim deste artigo é tão importante quanto o resto: lista honestamente o " +
+            "que NÃO foi feito e por quê.",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Resumo de tudo que foi implementado para tornar o sistema mais seguro, o que evita o " +
+                "problema de instabilidade da <code>/quote</code>, e uma avaliação de quando (se algum " +
+                "dia) valeria a pena introduzir uma fila de mensageria como o RabbitMQ.",
+            },
+            { tipo: "h2", id: "senhas-e-autenticacao", titulo: "Senhas e autenticação" },
+            {
+              tipo: "lista",
+              itens: [
+                "Senha <strong>nunca fica em texto puro</strong>: cada usuário grava um hash salgado " +
+                  "PBKDF2-HMAC-SHA256 (200 mil iterações) em <code>agent-service/app/auth.py</code>, " +
+                  "comparado com <code>secrets.compare_digest</code> (evita timing attack).",
+                "Cadastro de usuário é <strong>menu interno, só para admin</strong> — não existe " +
+                  "autocadastro público; ninguém escolhe o próprio perfil sozinho.",
+                "Sessão é um token opaco gerado com <code>secrets.token_hex</code>, guardado em memória " +
+                  "no servidor (não é um JWT — não dá pra forjar nem decodificar do lado do cliente).",
+              ],
+            },
+            { tipo: "h2", id: "controle-de-acesso", titulo: "Controle de acesso por perfil" },
+            {
+              tipo: "p",
+              html:
+                "O controle de verdade é <strong>sempre no backend</strong> — esconder um botão no " +
+                "front é só conveniência de interface, nunca a barreira real:",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>exigir_papel(*papeis)</code> em <code>main.py</code> é uma dependency do FastAPI " +
+                  "que roda em toda rota interna: sem token válido dá <strong>401</strong>, com token " +
+                  "mas perfil errado dá <strong>403</strong> — verificado no servidor, não dá pra burlar " +
+                  "editando o HTML.",
+                "Rotas administrativas (criar usuário, aprovar base de conhecimento, salvar " +
+                  "configuração) exigem <code>exigir_papel(\"admin\")</code> explicitamente.",
+                "<code>_garantir_conversa_disponivel</code> impede um atendente mexer numa conversa que " +
+                  "outro atendente já assumiu (evita dois atendentes atropelando o mesmo lead) — admin " +
+                  "sempre pode.",
+                "No frontend, cada página some com os links de Usuários/Configurações pra quem não é " +
+                  "admin (<code>sessao.papel !== \"admin\"</code>) — reforço de UX, não é a barreira em si.",
+              ],
+            },
+            { tipo: "h2", id: "dados-sensiveis", titulo: "Dados sensíveis: criptografia no MongoDB" },
+            {
+              tipo: "p",
+              html:
+                "Toda interação persistida no Mongo é cifrada <strong>do lado da aplicação</strong> " +
+                "(Fernet/AES) antes de sair do processo do <code>agent-service</code>, com uma chave que " +
+                "só existe na variável de ambiente — nunca no banco. Mesmo alguém com acesso de " +
+                "admin/root ao MongoDB só vê ciphertext. Detalhes completos no artigo " +
+                "<strong>De onde vêm as perguntas? E onde são gravadas as respostas?</strong>",
+            },
+            { tipo: "h2", id: "segredos-e-chaves", titulo: "Segredos e chaves de API" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>.env</code> real nunca é commitado (está no <code>.gitignore</code>); só o " +
+                  "<code>.env.example</code>, sem valores reais, vai pro repositório público.",
+                "<code>GET /config</code> <strong>nunca devolve o valor</strong> de uma chave secreta " +
+                  "(Anthropic, WhatsApp, reCAPTCHA secret) — só um booleano <code>&lt;nome&gt;_configurada</code> " +
+                  "(<code>config.py</code>, conjunto <code>_CHAVES_SECRETAS</code>). Deixar o campo em " +
+                  "branco no Admin preserva o valor atual, nunca apaga sem querer.",
+                "Fotos de usuário (data URI) são validadas por tipo e tamanho (até ~500KB) tanto no " +
+                  "navegador quanto no backend, pra não virar vetor de payload gigante.",
+              ],
+            },
+            { tipo: "h2", id: "verificacao-anti-bot", titulo: "Verificação \"não sou um robô\" antes do WhatsApp real" },
+            {
+              tipo: "p",
+              html:
+                "O botão que encaminha pro WhatsApp Business de verdade fica atrás de um gate reCAPTCHA " +
+                "v2 (real, se configurado em Admin, ou uma simulação visual em modo demonstração) — " +
+                "evita bot gerando custo real de WhatsApp Business API. O widget do site (onde o lead " +
+                "conversa até a cotação) nunca passa por esse gate — só o encaminhamento final.",
+            },
+            { tipo: "h2", id: "validacao-de-entrada", titulo: "Validação de entrada" },
+            {
+              tipo: "p",
+              html:
+                "Todo corpo de requisição da API passa por modelos <strong>Pydantic</strong> (tipo, " +
+                "formato, obrigatoriedade) antes de chegar em qualquer lógica de negócio — requisição " +
+                "malformada nunca chega no orchestrator.",
+            },
+            { tipo: "h2", id: "o-que-evita-o-problema-da-quote", titulo: "O que evita o problema da instabilidade da /quote" },
+            {
+              tipo: "p",
+              html:
+                "O <code>quote-service</code> falha e demora de propósito (é o desafio). O que protege o " +
+                "sistema — e principalmente o <strong>lead</strong> — dessa instabilidade:",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>Nunca inventa preço:</strong> o valor mostrado é sempre montado por template " +
+                  "Python direto do JSON devolvido pela <code>/quote</code>, nunca escrito pelo LLM — " +
+                  "mesmo se o Claude alucinar, o preço exibido não pode estar errado.",
+                "<strong>Só repete em falha de infra:</strong> timeout/erro de conexão/5xx entram em " +
+                  "retry com backoff exponencial (até <code>QUOTE_MAX_ATTEMPTS</code>); recusa de negócio " +
+                  "(422) e payload inválido (400) <em>nunca</em> são repetidos, porque repetir não muda " +
+                  "o resultado — só atrasaria uma resposta que já é definitiva.",
+                "<strong>Transparência com o lead:</strong> se esgotar as tentativas, o agente avisa que " +
+                  "o sistema está instável em vez de travar ou fingir que deu certo.",
+                "Detalhes completos (com o código) no artigo <strong>Como rodar a aplicação</strong> e no " +
+                  "<code>README.md</code>, seção \"O que ele faz quando a /quote falha\".",
+              ],
+            },
+            { tipo: "h2", id: "fila-rabbitmq", titulo: "Fila de mensageria (RabbitMQ) — vale a pena?" },
+            {
+              tipo: "p",
+              html:
+                "Não para este projeto, na escala atual — e essa foi uma decisão deliberada, não uma " +
+                "omissão. Hoje o retry da cotação acontece <strong>dentro do próprio request HTTP</strong> " +
+                "do lead: o agente tenta, espera o backoff, tenta de novo, tudo antes de responder. Numa " +
+                "fila mudaria pra: publicar um job de cotação, responder o lead na hora (\"já te aviso\"), " +
+                "e um worker separado cuida do retry e escreve a resposta quando tiver.",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>Quando valeria a pena:</strong> volume real (muitos leads simultâneos batendo " +
+                  "no <code>quote-service</code> ao mesmo tempo), necessidade de desacoplar a latência " +
+                  "do lead do tempo de retry, ou querer um <em>dead-letter</em> automático — transformar " +
+                  "\"falhou depois de todas as tentativas\" em handoff pra humano sem depender da próxima " +
+                  "mensagem do lead pra tentar de novo (hoje isso não existe: veja a limitação em " +
+                  "<code>aguardando_retry</code> no artigo sobre a <code>/quote</code>).",
+                "<strong>O custo de introduzir agora:</strong> mais um serviço no <code>docker-compose.yml</code>, " +
+                  "mais um ponto de falha pra monitorar, e o fluxo vira assíncrono — o widget já faz " +
+                  "polling a cada 4s (encaixaria bem), mas ainda é complexidade real pra uma escala que " +
+                  "hoje é um único <code>quote-service</code> mock.",
+                "<strong>Conclusão:</strong> arquitetura atual já separa corretamente infra-vs-negócio e " +
+                  "nunca inventa preço — isso resolve o requisito do desafio. RabbitMQ (ou similar) é o " +
+                  "passo natural de evolução se isso um dia virar produção com volume de verdade, não " +
+                  "algo que este projeto precisa hoje.",
+              ],
+            },
+            { tipo: "h2", id: "limitacoes-conhecidas", titulo: "Limitações conhecidas (honestidade, não descuido)" },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>CORS liberado (<code>allow_origins=[\"*\"]</code>)</strong> em " +
+                  "<code>agent-service/app/main.py</code> — aceitável pra um desafio local, não é assim " +
+                  "que deveria ficar em produção (restringir aos domínios reais do front-end).",
+                "<strong>Sem 2FA, sem expiração de sessão, sem rate limit de tentativas de login</strong> " +
+                  "— autenticação suficiente pra restringir o painel interno neste desafio, não é auth " +
+                  "de produção.",
+                "<strong>MongoDB exposto na porta 27017</strong> no <code>docker-compose.yml</code> — só " +
+                  "para inspeção local (<code>mongosh</code>, Compass), documentado no próprio arquivo " +
+                  "que isso não deveria acontecer assim em produção.",
+                "<strong>Sem rate limiting</strong> na API do agente — nada impede alguém de mandar " +
+                  "mensagens em loop (custaria créditos da Anthropic de verdade).",
+              ],
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>agent-service/app/auth.py</code> — hash de senha e sessão.",
+                "<code>agent-service/app/mongo_client.py</code> — criptografia das interações.",
+                "<code>agent-service/app/quote_client.py</code> — retry/backoff e classificação de falha.",
+                "<code>README.md</code>, seção \"Próximos passos / limitações conhecidas\".",
+              ],
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
