@@ -12,7 +12,6 @@ from typing import Any
 import anthropic
 from . import config as app_config
 
-MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-5")
 EFFORT = os.getenv("CLAUDE_EFFORT", "low")
 
 _client_cache: dict[str, Any] = {"key": None, "client": None}
@@ -88,7 +87,7 @@ def extrair(historico: str, slots_atuais: dict[str, Any]) -> dict[str, Any]:
         f"Historico recente (mais antiga primeiro):\n{historico}"
     )
     resp = _client().messages.create(
-        model=MODEL,
+        model=app_config.get_claude_model(),
         max_tokens=1024,
         system=_EXTRACT_SYSTEM,
         output_config={"effort": EFFORT},
@@ -122,7 +121,7 @@ def gerar_resposta(instrucao: str, fatos: dict[str, Any] | None = None) -> str:
             + json.dumps(fatos, ensure_ascii=False)
         )
     resp = _client().messages.create(
-        model=MODEL,
+        model=app_config.get_claude_model(),
         max_tokens=400,
         system=_REPLY_SYSTEM,
         output_config={"effort": EFFORT},

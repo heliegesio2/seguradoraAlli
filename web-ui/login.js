@@ -5,15 +5,17 @@
     form: document.getElementById("login-form"),
     usuario: document.getElementById("input-usuario"),
     senha: document.getElementById("input-senha"),
+    btnMostrarSenha: document.getElementById("btn-mostrar-senha"),
     btnEntrar: document.getElementById("btn-entrar"),
     erro: document.getElementById("login-erro"),
   };
 
   // Ja logado? Nao precisa passar pelo login de novo.
-  const sessaoAtual = window.getSessao();
-  if (sessaoAtual) {
-    window.location.href = sessaoAtual.papel === "admin" ? "atendente.html" : "atendente.html";
+  if (window.getSessao()) {
+    window.location.href = "atendente.html";
   }
+
+  window.attachPasswordToggle(el.btnMostrarSenha, el.senha);
 
   el.form.addEventListener("submit", async (e) => {
     e.preventDefault();

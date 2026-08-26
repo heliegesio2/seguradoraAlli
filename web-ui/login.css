@@ -37,4 +37,11 @@
   margin-top: 20px;
   text-align: center;
 }
+.login-card__home {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+}
+.login-card__home a { color: var(--md-primary); text-decoration: none; font-weight: 600; }
+.login-card__home a:hover { text-decoration: underline; }
 #btn-entrar { margin-top: 20px; }

@@ -15,8 +15,11 @@ _CHAVES_SECRETAS = {"anthropic_api_key", "whatsapp_api_token", "recaptcha_secret
 
 _MODOS_VALIDOS = {"site", "whatsapp", "misto"}
 
+_MODELOS_VALIDOS = {"claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"}
+
 _defaults: dict[str, Any] = {
     "handoff_mode": os.getenv("HANDOFF_MODE", "site"),
+    "claude_model": os.getenv("CLAUDE_MODEL", "claude-opus-5"),
     "whatsapp_business_number": os.getenv("WHATSAPP_BUSINESS_NUMBER", ""),
     "anthropic_api_key": os.getenv("ANTHROPIC_API_KEY", ""),
     "whatsapp_api_token": os.getenv("WHATSAPP_API_TOKEN", ""),
@@ -56,6 +59,10 @@ def get_handoff_mode() -> str:
     return _config.get("handoff_mode", "site")
 
 
+def get_claude_model() -> str:
+    return _config.get("claude_model") or "claude-opus-5"
+
+
 def update(**campos: Any) -> dict[str, Any]:
     """Atualiza so os campos informados (nao-vazios) - deixar em branco no forms
     do admin preserva o valor atual, nao apaga a chave sem querer."""
@@ -64,6 +71,12 @@ def update(**campos: Any) -> dict[str, Any]:
         if modo not in _MODOS_VALIDOS:
             raise ValueError(f"handoff_mode invalido: {modo!r} (use site, whatsapp ou misto)")
         _config["handoff_mode"] = modo
+
+    if "claude_model" in campos and campos["claude_model"] not in (None, ""):
+        modelo = campos["claude_model"]
+        if modelo not in _MODELOS_VALIDOS:
+            raise ValueError(f"claude_model invalido: {modelo!r}")
+        _config["claude_model"] = modelo
 
     for chave in (
         "whatsapp_business_number", "anthropic_api_key", "whatsapp_api_token",

@@ -29,6 +29,26 @@
       <div class="admin-col">
 
         <section class="card admin-card">
+          <div class="card__label">URL base do sistema (agent-service)</div>
+          <p class="hint">Fica salva só neste navegador (nunca é enviada ao servidor) — usada para apontar
+            o site para um agent-service diferente do padrão, por exemplo em produção.</p>
+          <input id="input-api-base" class="composer__input" type="text"
+            placeholder="http://localhost:8001" autocomplete="off" />
+          <button class="btn btn--outline" id="btn-salvar-api-base" style="margin-top:12px">Salvar URL base</button>
+          <p class="hint" id="api-base-feedback"></p>
+        </section>
+
+        <section class="card admin-card">
+          <div class="card__label">Modelo de IA (Claude)</div>
+          <p class="hint">Qual modelo o agente usa para entender o lead e gerar as respostas.</p>
+          <select id="select-claude-model" class="composer__input">
+            <option value="claude-opus-5">Claude Opus 5 (mais capaz)</option>
+            <option value="claude-sonnet-5">Claude Sonnet 5 (equilíbrio custo/qualidade)</option>
+            <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (mais rápido/barato)</option>
+          </select>
+        </section>
+
+        <section class="card admin-card">
           <div class="card__label">Modo de atendimento humano</div>
           <p class="hint">Define o que acontece quando o agente encaminha uma conversa para um atendente.</p>
           <div class="admin-options">
@@ -69,24 +89,33 @@
             <span class="card__label" style="margin:0">Chave da Anthropic (Claude)</span>
             <span class="admin-badge" id="badge-anthropic">—</span>
           </div>
-          <input id="input-anthropic-key" class="composer__input" type="password"
-            placeholder="sk-ant-… (deixe em branco para não alterar)" autocomplete="off" />
+          <div class="admin-password-field">
+            <input id="input-anthropic-key" class="composer__input" type="password"
+              placeholder="sk-ant-… (deixe em branco para não alterar)" autocomplete="off" />
+            <button type="button" class="btn btn--icon admin-eye" data-alvo="input-anthropic-key"
+              title="Mostrar/ocultar" aria-label="Mostrar ou ocultar">👁</button>
+          </div>
 
           <div class="admin-field-label">
             <span class="card__label" style="margin:0">Token da API do WhatsApp Business</span>
             <span class="admin-badge" id="badge-whatsapp-token">—</span>
           </div>
-          <input id="input-whatsapp-token" class="composer__input" type="password"
-            placeholder="Reservado para integração futura com a API oficial (Cloud API)" autocomplete="off" />
+          <div class="admin-password-field">
+            <input id="input-whatsapp-token" class="composer__input" type="password"
+              placeholder="Reservado para integração futura com a API oficial (Cloud API)" autocomplete="off" />
+            <button type="button" class="btn btn--icon admin-eye" data-alvo="input-whatsapp-token"
+              title="Mostrar/ocultar" aria-label="Mostrar ou ocultar">👁</button>
+          </div>
           <p class="hint">Hoje o encaminhamento no modo WhatsApp usa um link wa.me com o número acima —
             este token ainda não é usado por nenhuma integração, fica guardado para quando isso mudar.</p>
         </section>
 
         <section class="card admin-card">
-          <div class="card__label">Verificação "não sou um robô" (Google reCAPTCHA)</div>
-          <p class="hint">Quando as duas chaves abaixo estiverem preenchidas, o botão "Continuar no WhatsApp"
-            só libera depois do lead confirmar o reCAPTCHA — evita bot gerando custo real de WhatsApp
-            Business API. Gere as chaves em google.com/recaptcha/admin (tipo reCAPTCHA v2 "Caixa de seleção").</p>
+          <div class="card__label">Verificação "não sou um robô"</div>
+          <p class="hint">Sem as chaves abaixo, o botão "Continuar no WhatsApp" mostra uma caixinha "Não sou
+            um robô" simulada, só para demonstração. Cadastrando as chaves do Google reCAPTCHA v2 ("Caixa de
+            seleção", geradas em google.com/recaptcha/admin), o site passa a usar a verificação real do
+            Google antes de liberar o link — evita bot gerando custo real de WhatsApp Business API.</p>
 
           <div class="admin-field-label">
             <span class="card__label" style="margin:0">Site key</span>
@@ -98,8 +127,12 @@
             <span class="card__label" style="margin:0">Secret key</span>
             <span class="admin-badge" id="badge-recaptcha-secret">—</span>
           </div>
-          <input id="input-recaptcha-secret" class="composer__input" type="password"
-            placeholder="Deixe em branco para não alterar" autocomplete="off" />
+          <div class="admin-password-field">
+            <input id="input-recaptcha-secret" class="composer__input" type="password"
+              placeholder="Deixe em branco para não alterar" autocomplete="off" />
+            <button type="button" class="btn btn--icon admin-eye" data-alvo="input-recaptcha-secret"
+              title="Mostrar/ocultar" aria-label="Mostrar ou ocultar">👁</button>
+          </div>
         </section>
 
         <button class="btn btn--filled" id="btn-salvar-config">Salvar configurações</button>

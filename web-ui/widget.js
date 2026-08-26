@@ -138,9 +138,44 @@
     return recaptchaScriptPromise;
   }
 
+  function criarGateSimulado(conv) {
+    // Sem chave real do Google cadastrada no Admin: mostra uma caixinha "Não
+    // sou um robô" propria (nao e o widget do Google, so simula a experiencia
+    // para demonstracao) - o link do WhatsApp so libera depois de marcada.
+    const container = document.createElement("div");
+    container.className = "widget__whatsapp-gate";
+
+    const rotulo = document.createElement("label");
+    rotulo.className = "fake-recaptcha";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    const texto = document.createElement("span");
+    texto.textContent = "Não sou um robô";
+    rotulo.appendChild(checkbox);
+    rotulo.appendChild(texto);
+
+    const botaoDesabilitado = document.createElement("button");
+    botaoDesabilitado.type = "button";
+    botaoDesabilitado.className = "btn btn--filled btn--whatsapp";
+    botaoDesabilitado.disabled = true;
+    botaoDesabilitado.textContent = "Marque a caixinha para continuar no WhatsApp";
+
+    container.appendChild(rotulo);
+    container.appendChild(botaoDesabilitado);
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        container.replaceChild(criarBotaoHandoffWhatsapp(conv), botaoDesabilitado);
+        rotulo.classList.add("fake-recaptcha--ok");
+      }
+    });
+
+    return container;
+  }
+
   function criarAreaHandoffWhatsapp(conv) {
     if (!recaptchaSiteKey) {
-      return criarBotaoHandoffWhatsapp(conv);
+      return criarGateSimulado(conv);
     }
 
     const container = document.createElement("div");

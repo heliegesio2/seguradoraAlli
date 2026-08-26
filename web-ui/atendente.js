@@ -34,7 +34,9 @@
     detailMic: document.getElementById("detail-mic"),
     detailEnviar: document.getElementById("detail-enviar"),
     btnToggleKb: document.getElementById("btn-toggle-kb"),
+    btnFecharKb: document.getElementById("btn-fechar-kb"),
     kbPanel: document.getElementById("kb-panel"),
+    kbSomenteAdminHint: document.getElementById("kb-somente-admin-hint"),
     selectOrdenacao: document.getElementById("select-ordenacao"),
     kbPendentes: document.getElementById("kb-pendentes"),
     kbAprovadas: document.getElementById("kb-aprovadas"),
@@ -136,6 +138,14 @@
 
   // --- lista de conversas -----------------------------------------------
 
+  function estaBloqueadaParaMim(conv) {
+    const emAndamento = (conv.status === "handoff" || conv.status === "aguardando_avaliacao")
+      && conv.atendente_responsavel;
+    if (!emAndamento) return false;
+    if (sessao.papel === "admin") return false;
+    return conv.atendente_responsavel !== sessao.nome;
+  }
+
   function ordenarConversas(ack) {
     if (ordenacao === "nota_desc" || ordenacao === "nota_asc") {
       const sinal = ordenacao === "nota_desc" ? -1 : 1;
@@ -172,8 +182,12 @@
       const pendente = conv.status === "handoff" && conv.messages.length > (ack[conv.id] ?? 0);
       const ultima = conv.messages[conv.messages.length - 1];
 
+      const bloqueada = estaBloqueadaParaMim(conv);
+
       const row = document.createElement("div");
-      row.className = "conv-row" + (conv.id === selecionadaId ? " conv-row--active" : "");
+      row.className = "conv-row"
+        + (conv.id === selecionadaId ? " conv-row--active" : "")
+        + (bloqueada ? " conv-row--bloqueada" : "");
 
       const dot = document.createElement("div");
       dot.className = "conv-row__dot" + (pendente ? "" : " conv-row__dot--hidden");
@@ -190,12 +204,16 @@
         <div class="conv-row__id">${titulo}</div>
         <div class="conv-row__preview">${ultima ? escapeHtml(ultima.text) : "(sem mensagens)"}${escapeHtml(nota)}</div>
         <span class="conv-row__badge conv-row__badge--${conv.status}">${conv.status}</span>
-        ${conv.atendente_responsavel ? `<div class="conv-row__atendente">Atendido por ${escapeHtml(conv.atendente_responsavel)}</div>` : ""}
+        ${conv.atendente_responsavel ? `<div class="conv-row__atendente">${bloqueada ? "🔒 Em atendimento com" : "Atendido por"} ${escapeHtml(conv.atendente_responsavel)}</div>` : ""}
       `;
 
       row.appendChild(dot);
       row.appendChild(main);
-      row.addEventListener("click", () => selecionarConversa(conv.id));
+      if (bloqueada) {
+        row.title = `Em atendimento com ${conv.atendente_responsavel} - aguarde ficar aberta ou fechada.`;
+      } else {
+        row.addEventListener("click", () => selecionarConversa(conv.id));
+      }
       el.listItems.appendChild(row);
     }
   }
@@ -321,6 +339,8 @@
     const entradas = await api("/knowledge-base");
     const pendentes = entradas.filter((e) => !e.aprovado);
     const aprovadas = entradas.filter((e) => e.aprovado);
+    const souAdmin = sessao.papel === "admin";
+    el.kbSomenteAdminHint.hidden = souAdmin;
 
     el.kbPendentes.innerHTML = "";
     if (!pendentes.length) {
@@ -330,14 +350,30 @@
         const div = document.createElement("div");
         div.className = "kb-entry";
         div.innerHTML = `<strong>${escapeHtml(entry.motivo || "(sem motivo)")}</strong><br/>${escapeHtml(entry.solucao)}<br/>tags: ${entry.tags.join(", ") || "-"}`;
-        const btn = document.createElement("button");
-        btn.className = "btn btn--filled";
-        btn.textContent = "Aprovar para a base";
-        btn.onclick = async () => {
-          await api(`/knowledge-base/${entry.id}/approve`, { method: "POST" });
-          await carregarKb();
-        };
-        div.appendChild(btn);
+        if (souAdmin) {
+          const acoes = document.createElement("div");
+          acoes.className = "kb-entry__acoes";
+
+          const btnAprovar = document.createElement("button");
+          btnAprovar.className = "btn btn--filled";
+          btnAprovar.textContent = "Aprovar";
+          btnAprovar.onclick = async () => {
+            await api(`/knowledge-base/${entry.id}/approve`, { method: "POST" });
+            await carregarKb();
+          };
+
+          const btnReprovar = document.createElement("button");
+          btnReprovar.className = "btn btn--outline";
+          btnReprovar.textContent = "Reprovar";
+          btnReprovar.onclick = async () => {
+            await api(`/knowledge-base/${entry.id}/reject`, { method: "POST" });
+            await carregarKb();
+          };
+
+          acoes.appendChild(btnAprovar);
+          acoes.appendChild(btnReprovar);
+          div.appendChild(acoes);
+        }
         el.kbPendentes.appendChild(div);
       }
     }
@@ -400,6 +436,9 @@
   el.btnToggleKb.addEventListener("click", () => {
     el.kbPanel.hidden = !el.kbPanel.hidden;
     if (!el.kbPanel.hidden) carregarKb().catch(console.error);
+  });
+  el.btnFecharKb.addEventListener("click", () => {
+    el.kbPanel.hidden = true;
   });
   el.detailEnviar.addEventListener("click", enviarComoAtendente);
   el.detailInput.addEventListener("keydown", (e) => {

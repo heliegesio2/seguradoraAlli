@@ -59,6 +59,8 @@
 .conv-row:hover { background: var(--md-background); }
 .conv-row--active { background: var(--md-primary-container); }
 .conv-row--handoff-pending .conv-row__id { font-weight: 700; }
+.conv-row--bloqueada { cursor: not-allowed; opacity: 0.6; }
+.conv-row--bloqueada:hover { background: transparent; }
 
 .conv-row__dot {
   width: 9px; height: 9px; border-radius: 50%;
@@ -159,13 +161,21 @@
 .kb-panel {
   position: fixed;
   right: 0;
-  top: 0;
+  top: 61px;
   bottom: 0;
   width: 340px;
   box-shadow: var(--md-elevation-2);
   z-index: 20;
+  overflow-y: auto;
 }
 .kb-panel[hidden] { display: none; }
+.kb-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.kb-panel__header .debug-panel__title { margin: 0; }
 
 .kb-entry {
   font-size: 12px;

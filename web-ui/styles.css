@@ -97,6 +97,18 @@ html, body {
 .topbar__actions { display: flex; align-items: center; gap: 4px; }
 .topbar__user { font-size: 12.5px; opacity: 0.85; margin-right: 8px; }
 
+/* Campo de senha com botao de mostrar/ocultar - usado no login e no Admin. */
+.admin-password-field { display: flex; align-items: center; gap: 6px; }
+.admin-password-field .composer__input { flex: 1; }
+.admin-eye {
+  width: 38px; height: 38px;
+  color: var(--md-on-surface-variant);
+  background: var(--md-background);
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.admin-eye:hover { background: var(--md-surface-variant); }
+
 /* Buttons (MD3-ish) */
 .btn {
   border: none; cursor: pointer; font-family: inherit;

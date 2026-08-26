@@ -93,5 +93,17 @@ def aprovar_entrada(entry_id: str) -> dict[str, Any] | None:
     return None
 
 
+def reprovar_entrada(entry_id: str) -> dict[str, Any] | None:
+    """Remove uma resolucao pendente que o admin decidiu nao aprovar - nunca
+    chega a entrar na base de conhecimento usada pelo agente."""
+    entries = _load()
+    for i, entry in enumerate(entries):
+        if entry["id"] == entry_id:
+            entries.pop(i)
+            _save(entries)
+            return entry
+    return None
+
+
 def listar_entradas() -> list[dict[str, Any]]:
     return _load()

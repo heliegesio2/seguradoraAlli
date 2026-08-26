@@ -23,7 +23,11 @@
       </label>
       <label class="login-field">
         <span>Senha</span>
-        <input id="input-senha" class="composer__input" type="password" autocomplete="off" required />
+        <div class="admin-password-field">
+          <input id="input-senha" class="composer__input" type="password" autocomplete="off" required />
+          <button type="button" class="btn btn--icon admin-eye" id="btn-mostrar-senha"
+            title="Mostrar/ocultar" aria-label="Mostrar ou ocultar senha">👁</button>
+        </div>
       </label>
 
       <button class="btn btn--filled" type="submit" id="btn-entrar">Entrar</button>
@@ -32,6 +36,7 @@
       <p class="hint login-card__teste">
         Usuários de teste: <strong>admin</strong> / admin123 · <strong>atendente</strong> / atendente123
       </p>
+      <p class="login-card__home"><a href="index.html">← Voltar para o site</a></p>
     </form>
   </div>
 

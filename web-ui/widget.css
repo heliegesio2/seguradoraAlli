@@ -95,6 +95,21 @@
 .widget__handoff-actions { display: flex; flex-direction: column; gap: 8px; }
 .widget__whatsapp-gate { display: flex; flex-direction: column; gap: 8px; align-items: center; }
 .widget__whatsapp-gate .btn--whatsapp:disabled { opacity: 0.6; cursor: default; }
+
+.fake-recaptcha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-radius-s);
+  font-size: 13px;
+  cursor: pointer;
+}
+.fake-recaptcha input { width: 18px; height: 18px; flex-shrink: 0; }
+.fake-recaptcha--ok { border-color: var(--md-accent-green, #22c55e); }
 .btn--whatsapp, .btn--handoff {
   display: inline-flex;
   align-items: center;

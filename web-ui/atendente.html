@@ -98,10 +98,13 @@
                   Finalizar atendimento
                 </button>
                 <p class="hint">Ao finalizar, o lead recebe um pedido para avaliar o atendimento de 1 a 10.</p>
+              </div>
 
-                <p class="hint" style="margin-top:16px">Registre como você resolveu para liberar o caso e
-                  alimentar a base de conhecimento (fica pendente até aprovação; as tags são geradas
-                  automaticamente a partir do motivo e do problema relatado).</p>
+              <div class="card">
+                <div class="card__label">Registrar resolução</div>
+                <p class="hint">Sempre disponível: registre como o caso foi resolvido para alimentar a base
+                  de conhecimento (fica pendente até um admin aprovar; as tags são geradas automaticamente
+                  a partir do motivo e do problema relatado, quando existirem).</p>
                 <div class="composer__row">
                   <textarea id="input-solucao" class="composer__input composer__input--area"
                     placeholder="Como você resolveu isso?"></textarea>
@@ -125,9 +128,13 @@
       </section>
 
       <aside class="debug-panel kb-panel" id="kb-panel" hidden>
-        <h2 class="debug-panel__title">Base de conhecimento</h2>
+        <div class="kb-panel__header">
+          <h2 class="debug-panel__title">Base de conhecimento</h2>
+          <button class="btn btn--icon" id="btn-fechar-kb" title="Fechar" aria-label="Fechar">✕</button>
+        </div>
         <div class="card">
           <div class="card__label">Pendentes de aprovação</div>
+          <p class="hint" id="kb-somente-admin-hint" hidden>Somente um admin pode aprovar ou reprovar.</p>
           <div id="kb-pendentes">—</div>
         </div>
         <div class="card">

@@ -39,3 +39,14 @@ window.logoutStaff = async function logoutStaff() {
   sessionStorage.removeItem(window.AUTH_KEY);
   window.location.href = "login.html";
 };
+
+// Botao de "olhinho" para mostrar/ocultar um campo de senha - usado no login e
+// nos campos de chave do Admin.
+window.attachPasswordToggle = function attachPasswordToggle(botao, campo) {
+  botao.addEventListener("click", () => {
+    const mostrando = campo.type === "text";
+    campo.type = mostrando ? "password" : "text";
+    botao.textContent = mostrando ? "👁" : "🙈";
+    botao.setAttribute("aria-label", mostrando ? "Mostrar senha" : "Ocultar senha");
+  });
+};

@@ -34,6 +34,7 @@ class AvaliacaoRequest(BaseModel):
 
 class ConfigUpdateRequest(BaseModel):
     handoff_mode: str | None = None
+    claude_model: str | None = None
     whatsapp_business_number: str | None = None
     anthropic_api_key: str | None = None
     whatsapp_api_token: str | None = None
@@ -64,6 +65,19 @@ def exigir_papel(*papeis_permitidos: str):
             raise HTTPException(status_code=403, detail="Sem permissao para esta acao")
         return sessao
     return dependencia
+
+
+def _garantir_conversa_disponivel(conv, sessao: dict) -> None:
+    """Uma conversa 'em andamento' (handoff/aguardando_avaliacao com atendente ja
+    atribuido) so pode ser mexida por quem a assumiu ou por um admin - evita dois
+    atendentes atropelando o mesmo atendimento. Conversas ainda abertas (sem
+    atendente) ou ja fechadas continuam livres para qualquer um."""
+    em_andamento = conv.status in ("handoff", "aguardando_avaliacao") and conv.atendente_responsavel is not None
+    if em_andamento and sessao["papel"] != "admin" and conv.atendente_responsavel != sessao["nome"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Conversa em andamento com {conv.atendente_responsavel}",
+        )
 
 
 @app.get("/health")
@@ -98,6 +112,7 @@ def atualizar_config(body: ConfigUpdateRequest, _sessao: dict = Depends(exigir_p
     try:
         return app_config.update(
             handoff_mode=body.handoff_mode,
+            claude_model=body.claude_model,
             whatsapp_business_number=body.whatsapp_business_number,
             anthropic_api_key=body.anthropic_api_key,
             whatsapp_api_token=body.whatsapp_api_token,
@@ -160,15 +175,15 @@ def enviar_mensagem(conversation_id: str, body: MensagemRequest):
 @app.post("/conversations/{conversation_id}/resolve-handoff")
 def resolver_handoff(
     conversation_id: str, body: ResolucaoRequest,
-    _sessao: dict = Depends(exigir_papel("atendente", "admin")),
+    sessao: dict = Depends(exigir_papel("atendente", "admin")),
 ):
-    """Simula o atendente humano registrando como resolveu um handoff. Entra
-    como pendente ate aprovacao (ver /knowledge-base/{entry_id}/approve)."""
+    """Atendente registra como resolveu o caso - disponivel em qualquer conversa,
+    a qualquer momento (nao so durante o handoff), para alimentar a base de
+    conhecimento. Entra como pendente ate aprovacao de um admin."""
     conv = store.get_conversation(conversation_id)
     if conv is None:
         raise HTTPException(status_code=404, detail="Conversa nao encontrada")
-    if conv.status != "handoff":
-        raise HTTPException(status_code=400, detail="Conversa nao esta em handoff")
+    _garantir_conversa_disponivel(conv, sessao)
     entry = knowledge_base.registrar_resolucao_pendente(
         conversation_id, conv.handoff_reason or "", conv.handoff_problema or "", body.solucao
     )
@@ -187,6 +202,7 @@ def finalizar_atendimento(
         raise HTTPException(status_code=404, detail="Conversa nao encontrada")
     if conv.status != "handoff":
         raise HTTPException(status_code=400, detail="Conversa nao esta em handoff")
+    _garantir_conversa_disponivel(conv, sessao)
     if conv.atendente_responsavel is None:
         conv.atendente_responsavel = sessao["nome"]
     orchestrator.finalizar_atendimento(conv)
@@ -212,12 +228,13 @@ def enviar_mensagem_atendente(
     sessao: dict = Depends(exigir_papel("atendente", "admin")),
 ):
     """Mensagem escrita ao vivo pelo atendente humano, direto para o lead - nao
-    passa pelo orchestrator/LLM, e o atendente falando por si mesmo. Qualquer
-    atendente ou admin pode responder qualquer conversa a qualquer momento -
-    a primeira resposta so marca quem esta cuidando dela, sem restringir."""
+    passa pelo orchestrator/LLM, e o atendente falando por si mesmo. A primeira
+    resposta assume a conversa; a partir dai, so quem assumiu (ou um admin)
+    pode continuar respondendo - ver _garantir_conversa_disponivel."""
     conv = store.get_conversation(conversation_id)
     if conv is None:
         raise HTTPException(status_code=404, detail="Conversa nao encontrada")
+    _garantir_conversa_disponivel(conv, sessao)
     if conv.atendente_responsavel is None:
         conv.atendente_responsavel = sessao["nome"]
     msg = Message(id=new_id("msg"), role="atendente", text=body.texto)
@@ -233,10 +250,16 @@ def listar_base_conhecimento(_sessao: dict = Depends(exigir_papel("atendente", "
 
 
 @app.post("/knowledge-base/{entry_id}/approve")
-def aprovar_base_conhecimento(
-    entry_id: str, _sessao: dict = Depends(exigir_papel("atendente", "admin")),
-):
+def aprovar_base_conhecimento(entry_id: str, _sessao: dict = Depends(exigir_papel("admin"))):
     entry = knowledge_base.aprovar_entrada(entry_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Entrada nao encontrada")
+    return entry
+
+
+@app.post("/knowledge-base/{entry_id}/reject")
+def reprovar_base_conhecimento(entry_id: str, _sessao: dict = Depends(exigir_papel("admin"))):
+    entry = knowledge_base.reprovar_entrada(entry_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="Entrada nao encontrada")
     return entry
