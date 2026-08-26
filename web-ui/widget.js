@@ -350,6 +350,7 @@
 
   async function abrirWidget() {
     el.widget.hidden = false;
+    el.fab.hidden = true;
     el.fab.setAttribute("aria-expanded", "true");
     naoLidas = 0;
     badgeAba.atualizar(0);
@@ -367,6 +368,7 @@
 
   function fecharWidget() {
     el.widget.hidden = true;
+    el.fab.hidden = false;
     el.fab.setAttribute("aria-expanded", "false");
   }
 
