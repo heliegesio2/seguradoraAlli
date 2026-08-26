@@ -104,6 +104,10 @@
 
   el.btnSalvar.addEventListener("click", salvar);
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
+  if (sessao.papel !== "admin") {
+    document.getElementById("link-usuarios")?.setAttribute("hidden", "");
+    document.getElementById("link-admin")?.setAttribute("hidden", "");
+  }
   carregar().catch((err) => {
     el.status.textContent = "erro ao carregar configuração";
     console.error(err);

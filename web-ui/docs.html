@@ -21,8 +21,31 @@
       <div class="topbar__actions">
         <a class="topbar-avatar-link" id="topbar-avatar-usuario" href="meus-dados.html" title="Meus dados"></a>
         <span class="topbar__user" id="topbar-usuario"></span>
-        <a class="btn btn--text" href="atendente.html">Painel do atendente</a>
-        <a class="btn btn--text" href="index.html">Ver site</a>
+        <div class="menu-sanfona">
+          <button class="btn btn--icon" id="btn-menu" title="Menu" aria-label="Abrir menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="2.2" rx="1.1"/>
+              <rect x="3" y="11" width="18" height="2.2" rx="1.1"/>
+              <rect x="3" y="17" width="18" height="2.2" rx="1.1"/>
+            </svg>
+          </button>
+          <div class="menu-sanfona__painel" id="menu-painel" hidden>
+            <a class="menu-sanfona__item" href="index.html">Ver site</a>
+            <a class="menu-sanfona__item" href="atendente.html">Painel do atendente</a>
+            <a class="menu-sanfona__item" href="relatorios.html">Relatórios</a>
+            <a class="menu-sanfona__item" href="docs.html">Documentação</a>
+            <a class="menu-sanfona__item" href="meus-dados.html">
+              <span class="menu-sanfona__icon">🖼️</span> Meus dados
+            </a>
+            <a class="menu-sanfona__item" href="usuarios.html" id="link-usuarios">
+              <span class="menu-sanfona__icon">👤</span> Usuários
+            </a>
+            <a class="menu-sanfona__item" href="admin.html" id="link-admin">
+              <span class="menu-sanfona__icon">⚙️</span> Configurações
+            </a>
+            <button class="menu-sanfona__item menu-sanfona__item--sair" id="btn-sair">Sair</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -45,6 +68,7 @@
   <script src="config.js"></script>
   <script src="auth.js"></script>
   <script src="avatar.js"></script>
+  <script src="menu.js"></script>
   <script src="docs-content.js"></script>
   <script src="docs.js"></script>
 </body>

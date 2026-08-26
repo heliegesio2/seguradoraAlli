@@ -19,6 +19,10 @@
 
   el.status.textContent = `${sessao.nome} (${sessao.papel})`;
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
+  if (sessao.papel !== "admin") {
+    document.getElementById("link-usuarios")?.setAttribute("hidden", "");
+    document.getElementById("link-admin")?.setAttribute("hidden", "");
+  }
 
   function renderFotoAtual() {
     const foto = fotoSelecionada === undefined ? sessao.foto : fotoSelecionada;

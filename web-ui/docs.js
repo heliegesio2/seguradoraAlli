@@ -13,6 +13,10 @@
   };
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
+  if (sessao.papel !== "admin") {
+    document.getElementById("link-usuarios")?.setAttribute("hidden", "");
+    document.getElementById("link-admin")?.setAttribute("hidden", "");
+  }
 
   let modoMarkdown = false;
   let observadorScroll = null;

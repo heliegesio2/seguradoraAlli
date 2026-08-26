@@ -11,7 +11,6 @@
     topbarUsuario: document.getElementById("topbar-usuario"),
     linkAdmin: document.getElementById("link-admin"),
     linkUsuarios: document.getElementById("link-usuarios"),
-    btnSair: document.getElementById("btn-sair"),
     conexaoStatus: document.getElementById("conexao-status"),
     convCount: document.getElementById("conv-count"),
     listItems: document.getElementById("conv-list-items"),
@@ -35,7 +34,6 @@
     detailInput: document.getElementById("detail-input"),
     detailMic: document.getElementById("detail-mic"),
     detailEnviar: document.getElementById("detail-enviar"),
-    btnMenu: document.getElementById("btn-menu"),
     menuPainel: document.getElementById("menu-painel"),
     btnToggleKb: document.getElementById("btn-toggle-kb"),
     btnFecharKb: document.getElementById("btn-fechar-kb"),
@@ -410,20 +408,7 @@
   });
   el.btnFinalizarAtendimento.addEventListener("click", finalizarAtendimento);
 
-  // Menu sanfona (hamburguer) da topbar
-  el.btnMenu.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const abrir = el.menuPainel.hidden;
-    el.menuPainel.hidden = !abrir;
-    el.btnMenu.setAttribute("aria-expanded", String(abrir));
-  });
-  document.addEventListener("click", (e) => {
-    if (!el.menuPainel.hidden && !el.menuPainel.contains(e.target) && e.target !== el.btnMenu) {
-      el.menuPainel.hidden = true;
-      el.btnMenu.setAttribute("aria-expanded", "false");
-    }
-  });
-
+  // Abrir/fechar o menu sanfona em si e generico - ver menu.js.
   el.btnToggleKb.addEventListener("click", () => {
     el.menuPainel.hidden = true;
     el.kbPanel.hidden = !el.kbPanel.hidden;
@@ -449,8 +434,6 @@
     el.linkAdmin.hidden = true;
     el.linkUsuarios.hidden = true;
   }
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
-
   poll();
   setInterval(poll, POLL_MS);
 })();
