@@ -7,7 +7,7 @@
     if (!SpeechRecognitionImpl) {
       botao.disabled = true;
       botao.title = "Reconhecimento de voz não suportado neste navegador";
-      return;
+      return { parar: () => {} };
     }
 
     const reconhecedor = new SpeechRecognitionImpl();
@@ -51,12 +51,21 @@
       }
     };
 
-    botao.addEventListener("click", () => {
-      if (gravando) {
-        gravando = false;
-        reconhecedor.stop();
+    function pararGravacao({ silencioso = false } = {}) {
+      if (!gravando) return;
+      gravando = false;
+      reconhecedor.stop();
+      if (silencioso) {
+        aplicarEstado(null);
+      } else {
         aplicarEstado("is-stopped");
         setTimeout(() => aplicarEstado(null), 600);
+      }
+    }
+
+    botao.addEventListener("click", () => {
+      if (gravando) {
+        pararGravacao();
         campo.focus();
         return;
       }
@@ -68,5 +77,11 @@
         console.error(err);
       }
     });
+
+    // Permite que quem chamou attachMic desligue o microfone de fora (ex: ao
+    // clicar em enviar) sem exigir que o usuario clique no botao de novo.
+    return {
+      parar: () => pararGravacao({ silencioso: true }),
+    };
   };
 })();

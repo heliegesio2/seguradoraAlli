@@ -14,6 +14,7 @@
     handoff: document.getElementById("widget-handoff"),
     handoffTexto: document.getElementById("widget-handoff-texto"),
     handoffActions: document.getElementById("widget-handoff-actions"),
+    favicon: document.getElementById("favicon"),
   };
 
   let conversationId = sessionStorage.getItem(SESSION_KEY);
@@ -24,6 +25,25 @@
   let recaptchaSiteKey = "";
   let handoffAcoesConstruidas = false;
   let recaptchaScriptPromise = null;
+
+  // --- badge na aba quando o atendente responde com o widget minimizado ----
+  const BASE_TITLE = document.title;
+  const badgeAba = window.criarBadgeAba({ favicon: el.favicon, letra: "A", cor: "#5b4ff0", tituloBase: BASE_TITLE });
+  let totalMensagensConhecidas = 0;
+  let naoLidas = 0;
+
+  function atualizarNaoLidas(conv) {
+    const novas = conv.messages.slice(totalMensagensConhecidas);
+    const novasDoAtendente = novas.filter((m) => m.role === "atendente").length;
+    if (el.widget.hidden && novasDoAtendente > 0) {
+      naoLidas += novasDoAtendente;
+      window.tocarSininho();
+    } else if (!el.widget.hidden) {
+      naoLidas = 0;
+    }
+    totalMensagensConhecidas = conv.messages.length;
+    badgeAba.atualizar(naoLidas);
+  }
 
   async function api(path, options) {
     const resp = await fetch(`${API}${path}`, {
@@ -95,20 +115,14 @@
     el.messages.scrollTop = el.messages.scrollHeight;
   }
 
-  function criarBotaoHandoffSite(conv) {
-    const ultimaLead = [...conv.messages].reverse().find((m) => m.role === "lead");
-    const url = new URL("atendente.html", window.location.href);
-    url.searchParams.set("conversation", conv.id);
-    if (conv.lead_nome) url.searchParams.set("nome", conv.lead_nome);
-    if (ultimaLead) url.searchParams.set("duvida", ultimaLead.text);
-
-    const a = document.createElement("a");
-    a.href = url.toString();
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.textContent = "Abrir atendimento";
-    a.className = "btn btn--filled btn--handoff";
-    return a;
+  function criarAvisoAguardando() {
+    // Modo "site": nao ha nada pro lead clicar - o atendente e avisado sozinho
+    // (badge na aba do painel interno) e assume a conversa por la; assim que
+    // isso acontecer, a saudacao dele aparece aqui via o polling normal.
+    const p = document.createElement("p");
+    p.className = "widget__aguardando";
+    p.textContent = "Um atendente vai continuar por aqui em instantes. Pode aguardar nesta janela.";
+    return p;
   }
 
   function criarBotaoHandoffWhatsapp(conv) {
@@ -240,18 +254,19 @@
     el.handoffActions.innerHTML = "";
     if (handoffMode === "whatsapp" && whatsappNumber) {
       el.handoffActions.appendChild(criarAreaHandoffWhatsapp(conv));
-    } else if (handoffMode === "misto") {
-      el.handoffActions.appendChild(criarBotaoHandoffSite(conv));
-      if (whatsappNumber) el.handoffActions.appendChild(criarAreaHandoffWhatsapp(conv));
+    } else if (handoffMode === "misto" && whatsappNumber) {
+      el.handoffActions.appendChild(criarAvisoAguardando());
+      el.handoffActions.appendChild(criarAreaHandoffWhatsapp(conv));
     } else {
-      // Modo "site" (padrao): o atendimento continua aqui mesmo. O botao so
-      // abre o painel interno do atendente (uso do time, nao do lead) ja com
-      // essa conversa selecionada - simula o atendente sendo notificado.
-      el.handoffActions.appendChild(criarBotaoHandoffSite(conv));
+      // Modo "site" (padrao): o lead so aguarda por aqui mesmo - nenhum botao
+      // para clicar. O atendente e avisado sozinho (badge na aba do painel
+      // interno) e assume a conversa; a saudacao dele chega pelo polling normal.
+      el.handoffActions.appendChild(criarAvisoAguardando());
     }
   }
 
   function render(conv) {
+    atualizarNaoLidas(conv);
     renderMensagens(conv);
     renderHandoff(conv);
   }
@@ -336,6 +351,8 @@
   async function abrirWidget() {
     el.widget.hidden = false;
     el.fab.setAttribute("aria-expanded", "true");
+    naoLidas = 0;
+    badgeAba.atualizar(0);
     if (!carregada) {
       carregada = true;
       try {
@@ -358,19 +375,36 @@
     else fecharWidget();
   });
   el.btnFechar.addEventListener("click", fecharWidget);
-  el.btnEnviar.addEventListener("click", enviarMensagem);
-  attachMic(el.btnMic, el.input);
+  el.btnEnviar.addEventListener("click", () => {
+    micControl.parar();
+    enviarMensagem();
+  });
+  const micControl = attachMic(el.btnMic, el.input);
   el.input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enviarMensagem();
+    if (e.key === "Enter") {
+      micControl.parar();
+      enviarMensagem();
+    }
   });
 
   document.getElementById("btn-abrir-chat")?.addEventListener("click", abrirWidget);
   carregarConfig();
 
-  // Enquanto o widget estiver aberto, sincroniza com respostas do atendente
-  // humano (enviadas pelo painel interno) sem exigir que o lead reenvie algo.
+  // API minima para outros scripts da pagina (ex: os cards de plano da landing)
+  // abrirem o widget ja com uma mensagem inicial enviada.
+  window.AutoSeguroWidget = {
+    abrir: abrirWidget,
+    abrirComMensagem: async (texto) => {
+      await abrirWidget();
+      await enviarTexto(texto);
+    },
+  };
+
+  // Sincroniza com respostas do atendente humano mesmo com o widget minimizado
+  // (e nao so aberto) - e o que permite avisar na aba (favicon/titulo/som)
+  // quando chega uma resposta nova sem o lead precisar reabrir o chat.
   setInterval(() => {
-    if (!el.widget.hidden && conversationId) {
+    if (conversationId) {
       api(`/conversations/${conversationId}`).then(render).catch(() => {});
     }
   }, 4000);

@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AutoSeguro — Seguro de carro sem burocracia</title>
+<link rel="icon" id="favicon" href="data:," />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="landing.css" />
 <link rel="stylesheet" href="widget.css" />
@@ -75,7 +76,7 @@
             <li>Roubo</li>
             <li>Furto</li>
           </ul>
-          <button class="btn btn--outline btn-cotar-plano">Cotar esse plano</button>
+          <button class="btn btn--outline btn-cotar-plano" data-plano="Essencial">Cotar esse plano</button>
         </div>
 
         <div class="plan-card plan-card--destaque">
@@ -90,7 +91,7 @@
             <li>Danos a terceiros</li>
             <li>Vidros</li>
           </ul>
-          <button class="btn btn--accent btn-cotar-plano">Cotar esse plano</button>
+          <button class="btn btn--accent btn-cotar-plano" data-plano="Completo">Cotar esse plano</button>
         </div>
 
         <div class="plan-card">
@@ -106,7 +107,7 @@
             <li>Carro reserva</li>
             <li>Assistência 24h</li>
           </ul>
-          <button class="btn btn--outline btn-cotar-plano">Cotar esse plano</button>
+          <button class="btn btn--outline btn-cotar-plano" data-plano="Premium">Cotar esse plano</button>
         </div>
       </div>
       <p class="section__footnote">Coberturas de roubo e furto têm carência de 30 dias a partir do início da vigência.</p>
@@ -321,6 +322,7 @@
   </button>
 
   <script src="config.js"></script>
+  <script src="tab-badge.js"></script>
   <script src="speech.js"></script>
   <script src="widget.js"></script>
   <script src="landing.js"></script>

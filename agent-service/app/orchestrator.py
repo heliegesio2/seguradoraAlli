@@ -271,9 +271,11 @@ def _proxima_pergunta_slot(conv: Conversation) -> tuple[str, list[dict[str, str]
     if proximo == "plano_id":
         return _PERGUNTA_PLANO, _OPCOES_PLANO
     resposta = llm.gerar_resposta(
-        f"Peca ao lead, em uma mensagem curta e direta de WhatsApp, apenas o seguinte "
-        f"dado que falta para gerar a cotacao: {_NOMES_SLOT[proximo]}. Faca so essa "
-        f"pergunta - nao mencione nenhum outro dado nesta mensagem."
+        f"Peca ao lead, em uma mensagem curta e natural de WhatsApp, apenas o seguinte "
+        f"dado que falta para continuar a cotacao: {_NOMES_SLOT[proximo]}. Faca so essa "
+        f"pergunta - nao mencione nenhum outro dado nesta mensagem. Varie a forma de "
+        f"perguntar a cada vez - nao repita sempre a mesma frase pronta (tipo 'so falta "
+        f"um dado'); soe como uma pessoa de verdade perguntando, nao um robo com script fixo."
     )
     return resposta, None
 

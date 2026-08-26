@@ -80,6 +80,20 @@ def _garantir_conversa_disponivel(conv, sessao: dict) -> None:
         )
 
 
+def _assumir_se_necessario(conv, sessao: dict) -> None:
+    """Na primeira acao de um atendente numa conversa, marca quem assumiu e
+    manda uma saudacao automatica - o lead sempre sabe que um humano de verdade
+    entrou na conversa, mesmo que o atendente va direto finalizar sem digitar nada."""
+    if conv.atendente_responsavel is not None:
+        return
+    conv.atendente_responsavel = sessao["nome"]
+    saudacao = Message(
+        id=new_id("msg"), role="atendente",
+        text=f"Olá, eu sou {sessao['nome']}, vou te atender agora.",
+    )
+    conv.messages.append(saudacao)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -203,8 +217,7 @@ def finalizar_atendimento(
     if conv.status != "handoff":
         raise HTTPException(status_code=400, detail="Conversa nao esta em handoff")
     _garantir_conversa_disponivel(conv, sessao)
-    if conv.atendente_responsavel is None:
-        conv.atendente_responsavel = sessao["nome"]
+    _assumir_se_necessario(conv, sessao)
     orchestrator.finalizar_atendimento(conv)
     return conv.to_public_dict()
 
@@ -235,8 +248,7 @@ def enviar_mensagem_atendente(
     if conv is None:
         raise HTTPException(status_code=404, detail="Conversa nao encontrada")
     _garantir_conversa_disponivel(conv, sessao)
-    if conv.atendente_responsavel is None:
-        conv.atendente_responsavel = sessao["nome"]
+    _assumir_se_necessario(conv, sessao)
     msg = Message(id=new_id("msg"), role="atendente", text=body.texto)
     conv.messages.append(msg)
     conv.touch()

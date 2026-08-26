@@ -9,11 +9,24 @@
     });
   });
 
-  // Qualquer CTA de "cotar" abre o mesmo widget de chat (o FAB cuida da lógica)
+  // CTA genérico ("Iniciar conversa" etc) só abre o widget vazio
   const abrirChat = () => document.getElementById("btn-whatsapp-fab")?.click();
-  document.querySelectorAll(".btn-cotar-plano").forEach((btn) => btn.addEventListener("click", abrirChat));
   document.getElementById("footer-abrir-chat")?.addEventListener("click", (e) => {
     e.preventDefault();
     abrirChat();
+  });
+
+  // Cada card de plano já abre o widget com a mensagem de interesse pronta e
+  // enviada, sem o lead precisar digitar/clicar em enviar de novo.
+  document.querySelectorAll(".btn-cotar-plano").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const plano = btn.dataset.plano || "";
+      const texto = `Olá, gostaria de cotar o plano ${plano}`;
+      if (window.AutoSeguroWidget) {
+        window.AutoSeguroWidget.abrirComMensagem(texto);
+      } else {
+        abrirChat();
+      }
+    });
   });
 })();

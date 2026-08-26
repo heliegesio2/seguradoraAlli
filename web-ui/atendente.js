@@ -22,6 +22,7 @@
     detailSlots: document.getElementById("detail-slots"),
     detailAttempts: document.getElementById("detail-attempts"),
     detailHandoffCard: document.getElementById("detail-handoff-card"),
+    detailResolucaoCard: document.getElementById("detail-resolucao-card"),
     detailHandoffReason: document.getElementById("detail-handoff-reason"),
     detailHandoffProblema: document.getElementById("detail-handoff-problema"),
     btnFinalizarAtendimento: document.getElementById("btn-finalizar-atendimento"),
@@ -89,46 +90,8 @@
 
   // --- badge na aba (favicon + titulo) ---------------------------------
 
-  function desenharFavicon(count) {
-    const size = 64;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-
-    ctx.fillStyle = "#5b4ff0";
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 30px 'Segoe UI', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("A", size / 2, size / 2 + 2);
-
-    if (count > 0) {
-      const label = count > 9 ? "9+" : String(count);
-      const bx = size * 0.76, by = size * 0.24, br = size * 0.27;
-      ctx.fillStyle = "#d32f2f";
-      ctx.beginPath();
-      ctx.arc(bx, by, br, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "#ffffff";
-      ctx.stroke();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `bold ${label.length > 1 ? 18 : 24}px 'Segoe UI', sans-serif`;
-      ctx.fillText(label, bx, by + 1);
-    }
-    return canvas.toDataURL("image/png");
-  }
-
-  function atualizarBadge(count) {
-    el.favicon.href = desenharFavicon(count);
-    document.title = count > 0 ? `(${count > 9 ? "9+" : count}) ${BASE_TITLE}` : BASE_TITLE;
-  }
+  const badgeAba = window.criarBadgeAba({ favicon: el.favicon, letra: "A", cor: "#5b4ff0", tituloBase: BASE_TITLE });
+  const atualizarBadge = (count) => badgeAba.atualizar(count);
 
   function contarPendentes(ack) {
     return conversas.filter(
@@ -295,6 +258,10 @@
       el.detailHandoffCard.hidden = true;
     }
 
+    // So quem pode finalizar esse atendimento (dono ou admin) registra a
+    // resolucao - reaproveita a mesma regra do bloqueio "em andamento".
+    el.detailResolucaoCard.hidden = estaBloqueadaParaMim(conv);
+
     if (conv.nota_atendimento != null) {
       el.detailNotaCard.hidden = false;
       el.detailNotaValor.textContent = `${conv.nota_atendimento}/10`;
@@ -431,7 +398,13 @@
     ordenacao = el.selectOrdenacao.value;
     renderLista();
   });
-  el.btnRegistrarResolucao.addEventListener("click", registrarResolucao);
+  const detailMicControl = attachMic(el.detailMic, el.detailInput);
+  const solucaoMicControl = attachMic(el.solucaoMic, el.inputSolucao);
+
+  el.btnRegistrarResolucao.addEventListener("click", () => {
+    solucaoMicControl.parar();
+    registrarResolucao();
+  });
   el.btnFinalizarAtendimento.addEventListener("click", finalizarAtendimento);
   el.btnToggleKb.addEventListener("click", () => {
     el.kbPanel.hidden = !el.kbPanel.hidden;
@@ -440,12 +413,16 @@
   el.btnFecharKb.addEventListener("click", () => {
     el.kbPanel.hidden = true;
   });
-  el.detailEnviar.addEventListener("click", enviarComoAtendente);
-  el.detailInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enviarComoAtendente();
+  el.detailEnviar.addEventListener("click", () => {
+    detailMicControl.parar();
+    enviarComoAtendente();
   });
-  attachMic(el.detailMic, el.detailInput);
-  attachMic(el.solucaoMic, el.inputSolucao);
+  el.detailInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      detailMicControl.parar();
+      enviarComoAtendente();
+    }
+  });
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
   if (sessao.papel !== "admin") el.linkAdmin.hidden = true;
