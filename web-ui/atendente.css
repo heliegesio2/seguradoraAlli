@@ -176,6 +176,12 @@
   margin-bottom: 8px;
 }
 .kb-panel__header .debug-panel__title { margin: 0; }
+/* .btn--icon usa cor clara pensada pra topbar roxa - aqui o fundo e claro
+   (mesmo bug ja visto no .admin-eye), entao precisa escurecer o "X". */
+#btn-fechar-kb {
+  color: var(--md-on-surface);
+}
+#btn-fechar-kb:hover { background: var(--md-background); }
 
 .kb-entry {
   font-size: 12px;
