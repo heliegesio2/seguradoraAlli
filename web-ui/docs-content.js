@@ -819,10 +819,13 @@ window.DOCS = {
             {
               tipo: "lista",
               itens: [
-                "<strong>Testes automatizados:</strong> hoje não existe nenhum (nem <code>pytest</code> " +
-                  "nem suite de testes) — <code>_motivo_handoff</code>, a validação de slots e o retry " +
-                  "de cotação são funções puras, fáceis de testar isoladamente, e é o maior gap de " +
-                  "qualidade do projeto hoje.",
+                "<strong>Testes automatizados:</strong> já existem — 51 testes com <code>pytest</code> " +
+                  "em <code>agent-service/tests/</code> (<code>cd agent-service &amp;&amp; uv run --group " +
+                  "dev pytest</code>), cobrindo <code>_motivo_handoff</code>, validação de slots, o " +
+                  "retry infra-vs-negócio, a base de conhecimento, hash de senha e os filtros dos " +
+                  "relatórios — sem precisar de <code>ANTHROPIC_API_KEY</code>, Mongo nem " +
+                  "<code>quote-service</code> rodando. Ainda faltam testes de integração ponta a ponta " +
+                  "(via <code>TestClient</code> do FastAPI) e da camada de frontend.",
                 "<strong>Base de conhecimento com embeddings</strong> em vez de palavras-chave — já " +
                   "documentado como próximo passo natural (ver artigo sobre a base de conhecimento), " +
                   "generaliza melhor pra paráfrases distantes.",

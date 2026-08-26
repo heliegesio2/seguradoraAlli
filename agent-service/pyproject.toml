@@ -11,3 +11,10 @@ dependencies = [
     "pymongo",
     "cryptography",
 ]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

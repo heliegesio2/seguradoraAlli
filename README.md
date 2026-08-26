@@ -43,6 +43,19 @@ cd agent-service && uv run uvicorn app.main:app --port 8001   # precisa ANTHROPI
 Sem MongoDB configurado, o agente funciona normalmente — a persistência cifrada só fica
 desativada (ver [Dados sensíveis](#5-dados-sensíveis-mongodb-com-criptografia-do-lado-da-aplicação)).
 
+### Rodando os testes
+
+```bash
+cd agent-service && uv run --group dev pytest
+```
+
+51 testes, sem depender de `ANTHROPIC_API_KEY`, MongoDB nem do `quote-service` rodando —
+Claude e o cliente de cotação são substituídos por dublês (`monkeypatch`) nos testes que
+tocam `orchestrator.py`. Cobre principalmente o que o desafio mais cobra: `_motivo_handoff`
+(critério de handoff), a distinção infra-vs-negócio no retry da cotação, a garantia de que
+o preço nunca é escrito pelo LLM, o loop de aprovação da base de conhecimento, hash de senha
+e os filtros dos relatórios.
+
 ### Simulando falha de infraestrutura
 
 O `quote-service` já simula instabilidade de propósito (`QUOTE_FAILURE_RATE` /

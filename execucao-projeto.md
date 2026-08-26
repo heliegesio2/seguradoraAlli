@@ -75,5 +75,12 @@ Registradas com detalhe no [`README.md`](README.md) e no artigo **Segurança** d
 estado de conversa em memória (não sobrevive a restart do `agent-service`, só o histórico cifrado no
 Mongo sobrevive), sem fila de mensageria (RabbitMQ avaliado e adiado deliberadamente — não se justifica
 na escala do desafio), base de conhecimento por palavras-chave em vez de embeddings, auth sem 2FA/rate
-limit (adequado para o desafio, não para produção), CORS liberado, e ausência de suite de testes
-automatizados.
+limit (adequado para o desafio, não para produção), e CORS liberado.
+
+## Testes automatizados
+
+51 testes com `pytest` em `agent-service/tests/` — cobrem o critério de handoff, a distinção
+infra-vs-negócio no retry da cotação, a garantia de que o preço nunca vem do LLM, o loop de
+aprovação da base de conhecimento, hash de senha e os filtros dos relatórios. Rodam sem
+`ANTHROPIC_API_KEY`, MongoDB nem `quote-service` (Claude e o cliente de cotação são
+substituídos por dublês). Ver seção "Rodando os testes" no [`README.md`](README.md).

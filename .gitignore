@@ -22,5 +22,11 @@ venv/
 # eventos do agent-service (gerados em runtime, nao sao codigo)
 agent-service/logs/*.jsonl
 
+# dados gerados/semeados em runtime (usuarios, config do Admin) - persistem no
+# volume Docker (agent-data), nao no host; sem isso, rodar pytest local sem
+# Docker cria um usuarios.json de teste na hora do import de app/auth.py
+agent-service/data/usuarios.json
+agent-service/data/runtime_config.json
+
 # ...mas os logs de IA são entregável — ver README (Transparência de uso de IA)
 !ai-logs/**
