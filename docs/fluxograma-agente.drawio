@@ -49,8 +49,20 @@
           <mxGeometry x="290" y="1000" width="280" height="70" as="geometry" />
         </mxCell>
 
-        <mxCell id="n11" value="Resultado da chamada?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="320" y="1120" width="220" height="110" as="geometry" />
+        <mxCell id="n11" value="Resultado da chamada?&#10;(sucesso 200 | erro/timeout de infra 500/502/503 | recusa de negocio 422)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1120" width="260" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nbiz1" value="Informar o lead o motivo da recusa (regra de subscricao - ex: idade ou veiculo fora da faixa aceita; NAO e falha tecnica); status=recusado_negocio" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1090" width="280" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nbiz2" value="Lead aceita a recusa / desiste?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="1240" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nbiz3" value="Fim: recusa de negocio aceita, sem conversao; status=perdido_recusa" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="1400" width="220" height="70" as="geometry" />
         </mxCell>
 
         <mxCell id="n12" value="Apresentar cotacao ao lead (valor, plano, vigencia); status=cotado" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
@@ -203,7 +215,19 @@
         <mxCell id="e14" value="Sucesso" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n11" target="n12">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e15" value="Erro / timeout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n11" target="n13">
+        <mxCell id="e15" value="Erro/timeout (infra)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n11" target="n13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ebiz1" value="Recusa de negocio (422)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n11" target="nbiz1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ebiz2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="nbiz1" target="nbiz2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ebiz3" value="Sim (desiste)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="nbiz2" target="nbiz3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ebiz4" value="Nao (pede excecao/negociacao)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=0;entryX=1;entryY=0.7;" edge="1" parent="1" source="nbiz2" target="n18">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e16" value="Sim" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n13" target="n14">
