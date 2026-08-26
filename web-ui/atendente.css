@@ -13,11 +13,32 @@
 }
 .conv-list__header {
   padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--md-on-surface-variant);
   border-bottom: 1px solid var(--md-surface-variant);
+}
+.conv-list__sort {
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
+  border: 1px solid var(--md-surface-variant);
+  border-radius: 6px;
+  padding: 3px 6px;
+  background: var(--md-surface);
+  color: var(--md-on-surface-variant);
+  max-width: 50%;
+}
+.conv-row__atendente {
+  font-size: 11px;
+  color: var(--md-primary);
+  margin-top: 2px;
+  font-weight: 600;
 }
 .conv-list__items { flex: 1; overflow-y: auto; }
 .conv-list__empty {
@@ -70,6 +91,11 @@
 .conv-row__badge--cotado { background: var(--md-primary-container); color: var(--md-on-primary-container); }
 .conv-row__badge--fechado { background: var(--md-primary-container); color: var(--md-on-primary-container); }
 .conv-row__badge--perdido, .conv-row__badge--perdido_recusa { background: var(--md-surface-variant); color: var(--md-on-surface-variant); }
+.conv-row__badge--aguardando_avaliacao { background: #fff4d6; color: #6b4e00; }
+.conv-row__badge--atendimento_encerrado { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+
+.btn--encerrar { background: var(--md-accent-pink, #e63888); width: 100%; margin-top: 8px; }
+.btn--encerrar:hover { filter: brightness(1.05); }
 
 .conv-detail {
   flex: 1;
@@ -111,6 +137,9 @@
 }
 .conv-detail__messages {
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 20% 10%, rgba(20,108,67,0.05), transparent 40%),
     var(--md-background);
@@ -123,6 +152,7 @@
 .composer__row .composer__input--area { flex: 1; }
 .conv-detail__side {
   width: 300px;
+  flex-shrink: 0;
   border-left: 1px solid var(--md-surface-variant);
 }
 

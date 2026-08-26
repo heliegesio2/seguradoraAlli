@@ -92,6 +92,9 @@
 }
 .widget__handoff[hidden] { display: none; }
 .widget__handoff p { margin: 0 0 8px; font-size: 13px; line-height: 1.4; }
+.widget__handoff-actions { display: flex; flex-direction: column; gap: 8px; }
+.widget__whatsapp-gate { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.widget__whatsapp-gate .btn--whatsapp:disabled { opacity: 0.6; cursor: default; }
 .btn--whatsapp, .btn--handoff {
   display: inline-flex;
   align-items: center;
@@ -103,6 +106,29 @@
 .btn--whatsapp { background: #25d366; }
 .btn--handoff { background: var(--md-primary); }
 .btn--whatsapp:hover, .btn--handoff:hover { filter: brightness(1.05); }
+
+.widget__rating {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-self: center;
+  max-width: 95%;
+  margin-top: 4px;
+  justify-content: center;
+}
+.rating-chip {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--md-primary);
+  background: var(--md-surface);
+  color: var(--md-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.rating-chip:hover { background: var(--md-primary-container); }
 
 .widget__composer {
   display: flex;

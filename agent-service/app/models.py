@@ -12,6 +12,8 @@ Status = Literal[
     "recusa_negocio",    # recusa de subscricao explicada, aguardando reacao do lead
     "triagem_handoff",   # coletando nome + descricao do problema antes de decidir escalar
     "handoff",           # encaminhado para atendente humano
+    "aguardando_avaliacao",  # atendente finalizou; aguardando nota de 1 a 10 do lead
+    "atendimento_encerrado",  # nota recebida (ou fluxo encerrado) - conversa finalizada
     "fechado",           # lead aceitou a cotacao
     "perdido",           # lead recusou/desistiu apos ver a cotacao
     "perdido_recusa",    # recusa de negocio (subscricao) aceita pelo lead, sem handoff
@@ -40,6 +42,8 @@ class Message:
     oculto_para_atendente: bool = False
     """Mensagens de transicao (ex: 'vou te passar para um atendente') sao ruido
     na tela de quem ja E o atendente - ficam ocultas so nessa view, nao no widget do lead."""
+    pede_avaliacao: bool = False
+    """Sinaliza que a UI deve mostrar o seletor de nota (1 a 10) apos esta mensagem."""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -70,6 +74,11 @@ class Conversation:
     handoff_problema: str | None = None
     pre_handoff_status: Status | None = None
     lead_nome: str | None = None
+    nota_atendimento: int | None = None
+    atendente_responsavel: str | None = None
+    """Nome do atendente humano que assumiu essa conversa (setado na primeira
+    mensagem/finalizacao dele) - so para acompanhamento, nunca restringe quem
+    mais pode ver ou responder a conversa."""
     misunderstanding_count: int = 0
     created_at: str = field(default_factory=now_iso)
     updated_at: str = field(default_factory=now_iso)
@@ -91,6 +100,8 @@ class Conversation:
             "last_quote_result": self.last_quote_result,
             "handoff_reason": self.handoff_reason,
             "handoff_problema": self.handoff_problema,
+            "atendente_responsavel": self.atendente_responsavel,
             "lead_nome": self.lead_nome,
+            "nota_atendimento": self.nota_atendimento,
             "updated_at": self.updated_at,
         }

@@ -179,6 +179,37 @@ def _avancar_triagem_handoff(conv: Conversation, texto_lead: str, nome_ja_era_co
     return _escalar_para_handoff(conv, conv.handoff_reason or "handoff solicitado pelo lead")
 
 
+def finalizar_atendimento(conv: Conversation) -> str:
+    """Atendente humano encerra o atendimento pelo painel. Pede a nota de 1 a 10
+    ao lead antes de considerar a conversa de fato encerrada."""
+    conv.status = "aguardando_avaliacao"
+    log_event(conv.id, "atendimento_finalizado", {})
+    resposta = "Foi um prazer te ajudar! Antes de encerrar, você pode avaliar o atendimento de 1 a 10?"
+    _finalizar(conv, resposta, pede_avaliacao=True)
+    return resposta
+
+
+def registrar_avaliacao(conv: Conversation, nota: int) -> str:
+    """Lead avalia o atendimento (1 a 10). Gera um agradecimento elaborado, com o
+    tom adaptado a nota - nunca inventando detalhes do atendimento em si."""
+    conv.nota_atendimento = nota
+    conv.status = "atendimento_encerrado"
+    log_event(conv.id, "avaliacao_recebida", {"nota": nota})
+    conv.messages.append(Message(id=new_id("msg"), role="lead", text=f"Nota do atendimento: {nota}/10"))
+
+    resposta = llm.gerar_resposta(
+        "O lead acabou de avaliar o atendimento recebido. Escreva uma mensagem de agradecimento "
+        "calorosa e bem elaborada (3 a 5 frases), encerrando a conversa com cordialidade. Adapte "
+        "o tom conforme a nota: se for alta (8 a 10), comemore e convide a voltar sempre; se for "
+        "mediana (5 a 7), agradeca e diga que o feedback vai ajudar a melhorar; se for baixa (1 a "
+        "4), peca desculpas com empatia e assuma o compromisso de melhorar. Nao invente detalhes "
+        "do atendimento que nao foram informados aqui.",
+        fatos={"nota": nota},
+    )
+    _finalizar(conv, resposta)
+    return resposta
+
+
 def _executar_cotacao(conv: Conversation) -> str:
     payload = {
         "plano_id": conv.slots["plano_id"],
@@ -276,7 +307,9 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
     if motivo is None and conv.misunderstanding_count >= MISUNDERSTANDING_LIMIT:
         motivo = "varias mensagens seguidas nao foram compreendidas com confianca"
 
-    if motivo is not None and conv.status not in ("triagem_handoff", "handoff"):
+    if motivo is not None and conv.status not in (
+        "triagem_handoff", "handoff", "aguardando_avaliacao", "atendimento_encerrado",
+    ):
         resposta = _entrar_em_triagem_handoff(conv, motivo, sinais)
         _finalizar(conv, resposta)
         return resposta
@@ -321,17 +354,23 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
     elif conv.status == "aguardando_retry":
         resposta = _executar_cotacao(conv)
 
-    elif conv.status in ("fechado", "perdido", "perdido_recusa"):
+    elif conv.status in ("fechado", "perdido", "perdido_recusa", "atendimento_encerrado"):
         resposta = llm.gerar_resposta(
-            "Esta conversa ja foi encerrada anteriormente (fechamento, recusa ou desistencia). "
-            "Responda de forma breve e cordial; se o lead quiser reabrir o assunto, sugira falar "
-            "com um atendente humano."
+            "Esta conversa ja foi encerrada anteriormente (fechamento, recusa, desistencia ou "
+            "atendimento finalizado). Responda de forma breve e cordial; se o lead quiser reabrir "
+            "o assunto, sugira falar com um atendente humano."
         )
 
     elif conv.status == "handoff":
         resposta = llm.gerar_resposta(
             "Esta conversa ja foi encaminhada para um atendente humano e ainda nao foi retomada. "
             "Responda de forma breve dizendo que um atendente vai continuar por aqui em breve."
+        )
+
+    elif conv.status == "aguardando_avaliacao":
+        resposta = llm.gerar_resposta(
+            "O atendimento humano foi finalizado e o lead ainda nao enviou a nota de 1 a 10. "
+            "Peca gentilmente, em uma linha curta, que ele toque em um numero de 1 a 10 para avaliar."
         )
 
     else:  # coletando_dados (estado inicial/padrao)
@@ -358,10 +397,11 @@ def _finalizar(
     resposta: str,
     opcoes: list[dict[str, str]] | None = None,
     oculto_para_atendente: bool = False,
+    pede_avaliacao: bool = False,
 ) -> None:
     conv.messages.append(Message(
         id=new_id("msg"), role="agent", text=resposta, options=opcoes,
-        oculto_para_atendente=oculto_para_atendente,
+        oculto_para_atendente=oculto_para_atendente, pede_avaliacao=pede_avaliacao,
     ))
     conv.touch()
     log_event(conv.id, "resposta_enviada", {"status": conv.status})

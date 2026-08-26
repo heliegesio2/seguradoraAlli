@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Entrar — AutoSeguro</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <div class="login-page">
+    <form class="login-card" id="login-form">
+      <div class="login-card__brand">
+        <span class="nav__logo">AS</span>
+        <span class="nav__name">AutoSeguro</span>
+      </div>
+      <h1 class="login-card__title">Área interna</h1>
+      <p class="hint">Painel do atendente e Admin. Acesso restrito à equipe.</p>
+
+      <label class="login-field">
+        <span>Usuário</span>
+        <input id="input-usuario" class="composer__input" type="text" autocomplete="off" required />
+      </label>
+      <label class="login-field">
+        <span>Senha</span>
+        <input id="input-senha" class="composer__input" type="password" autocomplete="off" required />
+      </label>
+
+      <button class="btn btn--filled" type="submit" id="btn-entrar">Entrar</button>
+      <p class="login-erro" id="login-erro" hidden></p>
+
+      <p class="hint login-card__teste">
+        Usuários de teste: <strong>admin</strong> / admin123 · <strong>atendente</strong> / atendente123
+      </p>
+    </form>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

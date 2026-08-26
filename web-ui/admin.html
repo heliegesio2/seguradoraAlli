@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — AutoSeguro</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__title">
+        <span class="topbar__avatar">AS</span>
+        <div>
+          <div class="topbar__name">Admin</div>
+          <div class="topbar__status" id="admin-status">carregando…</div>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <span class="topbar__user" id="topbar-usuario"></span>
+        <a class="btn btn--text" href="atendente.html">Painel do atendente</a>
+        <a class="btn btn--text" href="index.html">Ver site</a>
+        <button class="btn btn--text" id="btn-sair">Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="admin-col">
+
+        <section class="card admin-card">
+          <div class="card__label">Modo de atendimento humano</div>
+          <p class="hint">Define o que acontece quando o agente encaminha uma conversa para um atendente.</p>
+          <div class="admin-options">
+            <label class="admin-option">
+              <input type="radio" name="handoff_mode" value="site" />
+              <div>
+                <strong>Somente no site</strong>
+                <p>O atendimento continua dentro do chat do site. Não gera custo de WhatsApp Business API.</p>
+              </div>
+            </label>
+            <label class="admin-option">
+              <input type="radio" name="handoff_mode" value="whatsapp" />
+              <div>
+                <strong>Somente WhatsApp Business</strong>
+                <p>O lead é encaminhado direto para o número de WhatsApp Business cadastrado abaixo.</p>
+              </div>
+            </label>
+            <label class="admin-option">
+              <input type="radio" name="handoff_mode" value="misto" />
+              <div>
+                <strong>Misto (site + WhatsApp Business)</strong>
+                <p>O lead escolhe: continuar no chat do site ou ser encaminhado para o WhatsApp Business.</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="card__label admin-field-label">Número do WhatsApp Business</div>
+          <input id="input-whatsapp-numero" class="composer__input" type="text"
+            placeholder="Ex: 5511999999999 (DDI + DDD + número, só dígitos)" autocomplete="off" />
+        </section>
+
+        <section class="card admin-card">
+          <div class="card__label">Chaves de API</div>
+          <p class="hint">As chaves nunca são exibidas de volta aqui por segurança — só se estão configuradas
+            ou não. Deixe um campo em branco para manter o valor atual.</p>
+
+          <div class="admin-field-label">
+            <span class="card__label" style="margin:0">Chave da Anthropic (Claude)</span>
+            <span class="admin-badge" id="badge-anthropic">—</span>
+          </div>
+          <input id="input-anthropic-key" class="composer__input" type="password"
+            placeholder="sk-ant-… (deixe em branco para não alterar)" autocomplete="off" />
+
+          <div class="admin-field-label">
+            <span class="card__label" style="margin:0">Token da API do WhatsApp Business</span>
+            <span class="admin-badge" id="badge-whatsapp-token">—</span>
+          </div>
+          <input id="input-whatsapp-token" class="composer__input" type="password"
+            placeholder="Reservado para integração futura com a API oficial (Cloud API)" autocomplete="off" />
+          <p class="hint">Hoje o encaminhamento no modo WhatsApp usa um link wa.me com o número acima —
+            este token ainda não é usado por nenhuma integração, fica guardado para quando isso mudar.</p>
+        </section>
+
+        <section class="card admin-card">
+          <div class="card__label">Verificação "não sou um robô" (Google reCAPTCHA)</div>
+          <p class="hint">Quando as duas chaves abaixo estiverem preenchidas, o botão "Continuar no WhatsApp"
+            só libera depois do lead confirmar o reCAPTCHA — evita bot gerando custo real de WhatsApp
+            Business API. Gere as chaves em google.com/recaptcha/admin (tipo reCAPTCHA v2 "Caixa de seleção").</p>
+
+          <div class="admin-field-label">
+            <span class="card__label" style="margin:0">Site key</span>
+          </div>
+          <input id="input-recaptcha-site" class="composer__input" type="text"
+            placeholder="Não é secreta — fica visível no HTML do site" autocomplete="off" />
+
+          <div class="admin-field-label">
+            <span class="card__label" style="margin:0">Secret key</span>
+            <span class="admin-badge" id="badge-recaptcha-secret">—</span>
+          </div>
+          <input id="input-recaptcha-secret" class="composer__input" type="password"
+            placeholder="Deixe em branco para não alterar" autocomplete="off" />
+        </section>
+
+        <button class="btn btn--filled" id="btn-salvar-config">Salvar configurações</button>
+        <p class="hint" id="salvar-feedback"></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

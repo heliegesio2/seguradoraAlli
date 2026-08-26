@@ -10,11 +10,22 @@ from __future__ import annotations
 import json, os
 from typing import Any
 import anthropic
+from . import config as app_config
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-5")
 EFFORT = os.getenv("CLAUDE_EFFORT", "low")
 
-_client = anthropic.Anthropic()
+_client_cache: dict[str, Any] = {"key": None, "client": None}
+
+
+def _client() -> anthropic.Anthropic:
+    """Recria o cliente so quando a chave (editavel via painel Admin) muda -
+    evita reconectar a cada chamada mas ainda pega trocas de chave em runtime."""
+    key = app_config.get_secret("anthropic_api_key") or None
+    if _client_cache["key"] != key:
+        _client_cache["client"] = anthropic.Anthropic(api_key=key)
+        _client_cache["key"] = key
+    return _client_cache["client"]
 
 _EXTRACT_TOOL = {
     "name": "analisar_mensagem",
@@ -76,7 +87,7 @@ def extrair(historico: str, slots_atuais: dict[str, Any]) -> dict[str, Any]:
         f"Dados ja confirmados nesta conversa: {json.dumps(slots_atuais, ensure_ascii=False)}\n\n"
         f"Historico recente (mais antiga primeiro):\n{historico}"
     )
-    resp = _client.messages.create(
+    resp = _client().messages.create(
         model=MODEL,
         max_tokens=1024,
         system=_EXTRACT_SYSTEM,
@@ -110,7 +121,7 @@ def gerar_resposta(instrucao: str, fatos: dict[str, Any] | None = None) -> str:
             "\n\nFatos disponiveis (use somente estes se precisar citar algo concreto):\n"
             + json.dumps(fatos, ensure_ascii=False)
         )
-    resp = _client.messages.create(
+    resp = _client().messages.create(
         model=MODEL,
         max_tokens=400,
         system=_REPLY_SYSTEM,

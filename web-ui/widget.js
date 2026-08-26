@@ -13,7 +13,7 @@
     status: document.getElementById("widget-status"),
     handoff: document.getElementById("widget-handoff"),
     handoffTexto: document.getElementById("widget-handoff-texto"),
-    handoffLink: document.getElementById("widget-handoff-link"),
+    handoffActions: document.getElementById("widget-handoff-actions"),
   };
 
   let conversationId = sessionStorage.getItem(SESSION_KEY);
@@ -21,6 +21,9 @@
   let carregada = false;
   let handoffMode = "site";
   let whatsappNumber = "";
+  let recaptchaSiteKey = "";
+  let handoffAcoesConstruidas = false;
+  let recaptchaScriptPromise = null;
 
   async function api(path, options) {
     const resp = await fetch(`${API}${path}`, {
@@ -75,14 +78,117 @@
         }
         el.messages.appendChild(wrap);
       }
+      if (ehUltima && m.pede_avaliacao && conv.status === "aguardando_avaliacao") {
+        const wrap = document.createElement("div");
+        wrap.className = "widget__rating";
+        for (let nota = 1; nota <= 10; nota++) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "rating-chip";
+          chip.textContent = String(nota);
+          chip.addEventListener("click", () => enviarAvaliacao(nota));
+          wrap.appendChild(chip);
+        }
+        el.messages.appendChild(wrap);
+      }
     });
     el.messages.scrollTop = el.messages.scrollHeight;
   }
 
+  function criarBotaoHandoffSite(conv) {
+    const ultimaLead = [...conv.messages].reverse().find((m) => m.role === "lead");
+    const url = new URL("atendente.html", window.location.href);
+    url.searchParams.set("conversation", conv.id);
+    if (conv.lead_nome) url.searchParams.set("nome", conv.lead_nome);
+    if (ultimaLead) url.searchParams.set("duvida", ultimaLead.text);
+
+    const a = document.createElement("a");
+    a.href = url.toString();
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Abrir atendimento";
+    a.className = "btn btn--filled btn--handoff";
+    return a;
+  }
+
+  function criarBotaoHandoffWhatsapp(conv) {
+    const texto = encodeURIComponent(
+      `Olá! Vim do site da AutoSeguro (conversa ${conv.id}). Motivo do encaminhamento: ${conv.handoff_reason || "atendimento humano"}.`
+    );
+    const a = document.createElement("a");
+    a.href = `https://wa.me/${whatsappNumber}?text=${texto}`;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Continuar no WhatsApp";
+    a.className = "btn btn--filled btn--whatsapp";
+    return a;
+  }
+
+  function carregarRecaptchaScript() {
+    if (window.grecaptcha && window.grecaptcha.render) return Promise.resolve();
+    if (recaptchaScriptPromise) return recaptchaScriptPromise;
+    recaptchaScriptPromise = new Promise((resolve) => {
+      window.__onRecaptchaLoad = resolve;
+      const s = document.createElement("script");
+      s.src = "https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoad&render=explicit";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    });
+    return recaptchaScriptPromise;
+  }
+
+  function criarAreaHandoffWhatsapp(conv) {
+    if (!recaptchaSiteKey) {
+      return criarBotaoHandoffWhatsapp(conv);
+    }
+
+    const container = document.createElement("div");
+    container.className = "widget__whatsapp-gate";
+
+    const botaoDesabilitado = document.createElement("button");
+    botaoDesabilitado.type = "button";
+    botaoDesabilitado.className = "btn btn--filled btn--whatsapp";
+    botaoDesabilitado.disabled = true;
+    botaoDesabilitado.textContent = "Confirme abaixo para continuar no WhatsApp";
+
+    const recaptchaSlot = document.createElement("div");
+    container.appendChild(recaptchaSlot);
+    container.appendChild(botaoDesabilitado);
+
+    carregarRecaptchaScript().then(() => {
+      window.grecaptcha.render(recaptchaSlot, {
+        sitekey: recaptchaSiteKey,
+        callback: async (token) => {
+          botaoDesabilitado.textContent = "Verificando…";
+          try {
+            const resultado = await api("/recaptcha/verify", {
+              method: "POST",
+              body: JSON.stringify({ token }),
+            });
+            if (resultado.sucesso) {
+              container.replaceChild(criarBotaoHandoffWhatsapp(conv), botaoDesabilitado);
+            } else {
+              botaoDesabilitado.textContent = "Verificação falhou, tente marcar de novo";
+            }
+          } catch (err) {
+            botaoDesabilitado.textContent = "Erro ao verificar, tente de novo";
+            console.error(err);
+          }
+        },
+      });
+    });
+
+    return container;
+  }
+
   function renderHandoff(conv) {
     if (conv.status !== "handoff") {
+      handoffAcoesConstruidas = false;
       el.handoff.hidden = true;
-      el.status.textContent = "online";
+      if (conv.status === "aguardando_avaliacao") el.status.textContent = "aguardando sua avaliação";
+      else if (conv.status === "atendimento_encerrado") el.status.textContent = "atendimento encerrado";
+      else el.status.textContent = "online";
       return;
     }
     el.status.textContent = "encaminhado para atendente";
@@ -91,30 +197,22 @@
       ? `Esse caso precisa de um atendente humano: ${conv.handoff_reason}.`
       : "Esse caso precisa de um atendente humano.";
 
+    // So monta os botoes uma vez por handoff: recriar a cada poll destruiria o
+    // iframe do reCAPTCHA (quando presente) no meio da verificacao do lead.
+    if (handoffAcoesConstruidas) return;
+    handoffAcoesConstruidas = true;
+
+    el.handoffActions.innerHTML = "";
     if (handoffMode === "whatsapp" && whatsappNumber) {
-      const texto = encodeURIComponent(
-        `Olá! Vim do site da AutoSeguro (conversa ${conv.id}). Motivo do encaminhamento: ${conv.handoff_reason || "atendimento humano"}.`
-      );
-      el.handoffLink.href = `https://wa.me/${whatsappNumber}?text=${texto}`;
-      el.handoffLink.target = "_blank";
-      el.handoffLink.textContent = "Continuar no WhatsApp";
-      el.handoffLink.className = "btn btn--filled btn--whatsapp";
-      el.handoffLink.onclick = null;
+      el.handoffActions.appendChild(criarAreaHandoffWhatsapp(conv));
+    } else if (handoffMode === "misto") {
+      el.handoffActions.appendChild(criarBotaoHandoffSite(conv));
+      if (whatsappNumber) el.handoffActions.appendChild(criarAreaHandoffWhatsapp(conv));
     } else {
       // Modo "site" (padrao): o atendimento continua aqui mesmo. O botao so
       // abre o painel interno do atendente (uso do time, nao do lead) ja com
       // essa conversa selecionada - simula o atendente sendo notificado.
-      const ultimaLead = [...conv.messages].reverse().find((m) => m.role === "lead");
-      const url = new URL("atendente.html", window.location.href);
-      url.searchParams.set("conversation", conv.id);
-      if (conv.lead_nome) url.searchParams.set("nome", conv.lead_nome);
-      if (ultimaLead) url.searchParams.set("duvida", ultimaLead.text);
-
-      el.handoffLink.href = url.toString();
-      el.handoffLink.target = "_blank";
-      el.handoffLink.textContent = "Abrir atendimento";
-      el.handoffLink.className = "btn btn--filled btn--handoff";
-      el.handoffLink.onclick = null;
+      el.handoffActions.appendChild(criarBotaoHandoffSite(conv));
     }
   }
 
@@ -128,6 +226,7 @@
       const cfg = await api("/config");
       handoffMode = cfg.handoff_mode || "site";
       whatsappNumber = cfg.whatsapp_business_number || "";
+      recaptchaSiteKey = cfg.recaptcha_site_key || "";
     } catch (err) {
       console.error(err);
     }
@@ -184,6 +283,19 @@
     if (!texto) return;
     el.input.value = "";
     enviarTexto(texto);
+  }
+
+  async function enviarAvaliacao(nota) {
+    if (!conversationId) return;
+    try {
+      const conv = await api(`/conversations/${conversationId}/avaliacao`, {
+        method: "POST",
+        body: JSON.stringify({ nota }),
+      });
+      render(conv);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function abrirWidget() {

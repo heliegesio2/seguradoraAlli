@@ -19,14 +19,24 @@
         </div>
       </div>
       <div class="topbar__actions">
+        <span class="topbar__user" id="topbar-usuario"></span>
         <a class="btn btn--text" href="index.html">Ver site</a>
         <button class="btn btn--text" id="btn-toggle-kb">Base de conhecimento</button>
+        <a class="btn btn--text" href="admin.html" id="link-admin">Admin</a>
+        <button class="btn btn--text" id="btn-sair">Sair</button>
       </div>
     </header>
 
     <main class="content">
       <aside class="conv-list" id="conv-list">
-        <div class="conv-list__header">Conversas <span id="conv-count">(0)</span></div>
+        <div class="conv-list__header">
+          <span>Conversas <span id="conv-count">(0)</span></span>
+          <select class="conv-list__sort" id="select-ordenacao">
+            <option value="padrao">Pendentes primeiro</option>
+            <option value="nota_desc">Nota: maior → menor</option>
+            <option value="nota_asc">Nota: menor → maior</option>
+          </select>
+        </div>
         <div class="conv-list__items" id="conv-list-items">
           <div class="conv-list__empty">Nenhuma conversa ainda.</div>
         </div>
@@ -83,8 +93,14 @@
                 <div class="card__value" id="detail-handoff-reason">—</div>
                 <div class="card__label" style="margin-top:8px">Problema relatado pelo lead</div>
                 <div id="detail-handoff-problema">—</div>
-                <p class="hint">Registre como você resolveu para liberar o caso e alimentar
-                  a base de conhecimento (fica pendente até aprovação; as tags são geradas
+
+                <button class="btn btn--filled btn--encerrar" id="btn-finalizar-atendimento">
+                  Finalizar atendimento
+                </button>
+                <p class="hint">Ao finalizar, o lead recebe um pedido para avaliar o atendimento de 1 a 10.</p>
+
+                <p class="hint" style="margin-top:16px">Registre como você resolveu para liberar o caso e
+                  alimentar a base de conhecimento (fica pendente até aprovação; as tags são geradas
                   automaticamente a partir do motivo e do problema relatado).</p>
                 <div class="composer__row">
                   <textarea id="input-solucao" class="composer__input composer__input--area"
@@ -97,6 +113,11 @@
                   </button>
                 </div>
                 <button class="btn btn--filled" id="btn-registrar-resolucao">Registrar resolução</button>
+              </div>
+
+              <div class="card" id="detail-nota-card" hidden>
+                <div class="card__label">Avaliação do atendimento</div>
+                <div class="card__value" id="detail-nota-valor">—</div>
               </div>
             </aside>
           </div>
@@ -118,6 +139,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="speech.js"></script>
   <script src="atendente.js"></script>
 </body>

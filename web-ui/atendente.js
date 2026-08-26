@@ -1,10 +1,16 @@
 (() => {
+  const sessao = window.exigirLogin(["atendente", "admin"]);
+  if (!sessao) return;
+
   const API = window.AGENT_API_BASE;
   const ACK_KEY = "autoseguro_atendente_ack_v1";
   const POLL_MS = 4000;
   const BASE_TITLE = "Painel do atendente — AutoSeguro";
 
   const el = {
+    topbarUsuario: document.getElementById("topbar-usuario"),
+    linkAdmin: document.getElementById("link-admin"),
+    btnSair: document.getElementById("btn-sair"),
     conexaoStatus: document.getElementById("conexao-status"),
     convCount: document.getElementById("conv-count"),
     listItems: document.getElementById("conv-list-items"),
@@ -18,6 +24,9 @@
     detailHandoffCard: document.getElementById("detail-handoff-card"),
     detailHandoffReason: document.getElementById("detail-handoff-reason"),
     detailHandoffProblema: document.getElementById("detail-handoff-problema"),
+    btnFinalizarAtendimento: document.getElementById("btn-finalizar-atendimento"),
+    detailNotaCard: document.getElementById("detail-nota-card"),
+    detailNotaValor: document.getElementById("detail-nota-valor"),
     inputSolucao: document.getElementById("input-solucao"),
     solucaoMic: document.getElementById("solucao-mic"),
     btnRegistrarResolucao: document.getElementById("btn-registrar-resolucao"),
@@ -26,6 +35,7 @@
     detailEnviar: document.getElementById("detail-enviar"),
     btnToggleKb: document.getElementById("btn-toggle-kb"),
     kbPanel: document.getElementById("kb-panel"),
+    selectOrdenacao: document.getElementById("select-ordenacao"),
     kbPendentes: document.getElementById("kb-pendentes"),
     kbAprovadas: document.getElementById("kb-aprovadas"),
     favicon: document.getElementById("favicon"),
@@ -33,6 +43,7 @@
 
   let conversas = [];
   let selecionadaId = null;
+  let ordenacao = "padrao";
 
   const paramsUrl = new URLSearchParams(location.search);
   const focoInicial = paramsUrl.get("conversation");
@@ -40,9 +51,14 @@
 
   async function api(path, options) {
     const resp = await fetch(`${API}${path}`, {
-      headers: { "content-type": "application/json" },
       ...options,
+      headers: { "content-type": "application/json", ...window.authHeaders(), ...(options?.headers || {}) },
     });
+    if (resp.status === 401) {
+      sessionStorage.removeItem(window.AUTH_KEY);
+      window.location.href = "login.html";
+      throw new Error("Sessão expirada.");
+    }
     if (!resp.ok) {
       const body = await resp.text();
       throw new Error(`${resp.status}: ${body}`);
@@ -120,6 +136,26 @@
 
   // --- lista de conversas -----------------------------------------------
 
+  function ordenarConversas(ack) {
+    if (ordenacao === "nota_desc" || ordenacao === "nota_asc") {
+      const sinal = ordenacao === "nota_desc" ? -1 : 1;
+      return [...conversas].sort((a, b) => {
+        const na = a.nota_atendimento;
+        const nb = b.nota_atendimento;
+        if (na == null && nb == null) return 0;
+        if (na == null) return 1; // sem nota vai para o fim, nos dois sentidos
+        if (nb == null) return -1;
+        return sinal * (na - nb);
+      });
+    }
+    return [...conversas].sort((a, b) => {
+      const aPend = a.status === "handoff" && a.messages.length > (ack[a.id] ?? 0);
+      const bPend = b.status === "handoff" && b.messages.length > (ack[b.id] ?? 0);
+      if (aPend !== bPend) return aPend ? -1 : 1;
+      return new Date(b.updated_at) - new Date(a.updated_at);
+    });
+  }
+
   function renderLista() {
     const ack = loadAck();
     el.convCount.textContent = `(${conversas.length})`;
@@ -129,12 +165,7 @@
       return;
     }
 
-    const ordenadas = [...conversas].sort((a, b) => {
-      const aPend = a.status === "handoff" && a.messages.length > (ack[a.id] ?? 0);
-      const bPend = b.status === "handoff" && b.messages.length > (ack[b.id] ?? 0);
-      if (aPend !== bPend) return aPend ? -1 : 1;
-      return new Date(b.updated_at) - new Date(a.updated_at);
-    });
+    const ordenadas = ordenarConversas(ack);
 
     el.listItems.innerHTML = "";
     for (const conv of ordenadas) {
@@ -151,12 +182,15 @@
         ? `${escapeHtml(conv.lead_nome)} · ${conv.id.replace("conv_", "")}`
         : conv.id.replace("conv_", "");
 
+      const nota = conv.nota_atendimento != null ? ` · nota ${conv.nota_atendimento}/10` : "";
+
       const main = document.createElement("div");
       main.className = "conv-row__main";
       main.innerHTML = `
         <div class="conv-row__id">${titulo}</div>
-        <div class="conv-row__preview">${ultima ? escapeHtml(ultima.text) : "(sem mensagens)"}</div>
+        <div class="conv-row__preview">${ultima ? escapeHtml(ultima.text) : "(sem mensagens)"}${escapeHtml(nota)}</div>
         <span class="conv-row__badge conv-row__badge--${conv.status}">${conv.status}</span>
+        ${conv.atendente_responsavel ? `<div class="conv-row__atendente">Atendido por ${escapeHtml(conv.atendente_responsavel)}</div>` : ""}
       `;
 
       row.appendChild(dot);
@@ -196,7 +230,9 @@
     el.detailBody.hidden = false;
 
     el.detailId.textContent = conv.lead_nome ? `${conv.lead_nome} · ${conv.id}` : conv.id;
-    el.detailStatus.textContent = `status: ${conv.status}`;
+    el.detailStatus.textContent = conv.atendente_responsavel
+      ? `status: ${conv.status} · atendido por ${conv.atendente_responsavel}`
+      : `status: ${conv.status}`;
 
     el.detailMessages.innerHTML = "";
     for (const m of conv.messages) {
@@ -240,6 +276,13 @@
     } else {
       el.detailHandoffCard.hidden = true;
     }
+
+    if (conv.nota_atendimento != null) {
+      el.detailNotaCard.hidden = false;
+      el.detailNotaValor.textContent = `${conv.nota_atendimento}/10`;
+    } else {
+      el.detailNotaCard.hidden = true;
+    }
   }
 
   async function registrarResolucao() {
@@ -252,6 +295,13 @@
     el.inputSolucao.value = "";
     await carregarConversas();
     await carregarKb();
+  }
+
+  async function finalizarAtendimento() {
+    if (!selecionadaId) return;
+    if (!confirm("Finalizar o atendimento? O lead vai receber o pedido de avaliação (1 a 10).")) return;
+    await api(`/conversations/${selecionadaId}/finalizar-atendimento`, { method: "POST" });
+    await carregarConversas();
   }
 
   async function enviarComoAtendente() {
@@ -341,7 +391,12 @@
     }
   }
 
+  el.selectOrdenacao.addEventListener("change", () => {
+    ordenacao = el.selectOrdenacao.value;
+    renderLista();
+  });
   el.btnRegistrarResolucao.addEventListener("click", registrarResolucao);
+  el.btnFinalizarAtendimento.addEventListener("click", finalizarAtendimento);
   el.btnToggleKb.addEventListener("click", () => {
     el.kbPanel.hidden = !el.kbPanel.hidden;
     if (!el.kbPanel.hidden) carregarKb().catch(console.error);
@@ -352,6 +407,10 @@
   });
   attachMic(el.detailMic, el.detailInput);
   attachMic(el.solucaoMic, el.inputSolucao);
+
+  el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
+  if (sessao.papel !== "admin") el.linkAdmin.hidden = true;
+  el.btnSair.addEventListener("click", () => window.logoutStaff());
 
   poll();
   setInterval(poll, POLL_MS);
