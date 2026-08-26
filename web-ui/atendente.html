@@ -20,10 +20,24 @@
       </div>
       <div class="topbar__actions">
         <span class="topbar__user" id="topbar-usuario"></span>
-        <a class="btn btn--text" href="index.html">Ver site</a>
-        <button class="btn btn--text" id="btn-toggle-kb">Base de conhecimento</button>
-        <a class="btn btn--text" href="admin.html" id="link-admin">Admin</a>
-        <button class="btn btn--text" id="btn-sair">Sair</button>
+        <div class="menu-sanfona">
+          <button class="btn btn--icon" id="btn-menu" title="Menu" aria-label="Abrir menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="2.2" rx="1.1"/>
+              <rect x="3" y="11" width="18" height="2.2" rx="1.1"/>
+              <rect x="3" y="17" width="18" height="2.2" rx="1.1"/>
+            </svg>
+          </button>
+          <div class="menu-sanfona__painel" id="menu-painel" hidden>
+            <a class="menu-sanfona__item" href="index.html">Ver site</a>
+            <button class="menu-sanfona__item" id="btn-toggle-kb">Base de conhecimento</button>
+            <button class="menu-sanfona__item" id="btn-toggle-relatorios">Relatórios</button>
+            <a class="menu-sanfona__item" href="admin.html" id="link-admin">
+              <span class="menu-sanfona__icon">⚙️</span> Configurações
+            </a>
+            <button class="menu-sanfona__item menu-sanfona__item--sair" id="btn-sair">Sair</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -140,6 +154,29 @@
         <div class="card">
           <div class="card__label">Aprovadas</div>
           <div id="kb-aprovadas">—</div>
+        </div>
+      </aside>
+
+      <aside class="debug-panel kb-panel" id="relatorios-panel" hidden>
+        <div class="kb-panel__header">
+          <h2 class="debug-panel__title">Relatórios</h2>
+          <button class="btn btn--icon" id="btn-fechar-relatorios" title="Fechar" aria-label="Fechar">✕</button>
+        </div>
+        <div class="card">
+          <div class="card__label">Atendimentos hoje</div>
+          <div class="card__value" id="rel-hoje">—</div>
+        </div>
+        <div class="card">
+          <div class="card__label">Total de atendimentos</div>
+          <div class="card__value" id="rel-total">—</div>
+        </div>
+        <div class="card">
+          <div class="card__label">Quem mais atendeu</div>
+          <div id="rel-ranking-volume">—</div>
+        </div>
+        <div class="card">
+          <div class="card__label">Melhores notas</div>
+          <div id="rel-ranking-notas">—</div>
         </div>
       </aside>
     </main>

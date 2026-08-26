@@ -79,6 +79,9 @@ class Conversation:
     """Nome do atendente humano que assumiu essa conversa (setado na primeira
     mensagem/finalizacao dele) - so para acompanhamento, nunca restringe quem
     mais pode ver ou responder a conversa."""
+    atendente_assumiu_em: str | None = None
+    """Timestamp de quando atendente_responsavel foi setado - usado nos relatorios
+    (ex: 'atendimentos hoje')."""
     misunderstanding_count: int = 0
     created_at: str = field(default_factory=now_iso)
     updated_at: str = field(default_factory=now_iso)
@@ -101,6 +104,7 @@ class Conversation:
             "handoff_reason": self.handoff_reason,
             "handoff_problema": self.handoff_problema,
             "atendente_responsavel": self.atendente_responsavel,
+            "atendente_assumiu_em": self.atendente_assumiu_em,
             "lead_nome": self.lead_nome,
             "nota_atendimento": self.nota_atendimento,
             "updated_at": self.updated_at,

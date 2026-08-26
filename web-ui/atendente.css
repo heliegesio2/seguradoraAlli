@@ -177,6 +177,57 @@
 }
 .kb-panel__header .debug-panel__title { margin: 0; }
 
+/* Menu sanfona (hamburguer) da topbar */
+.menu-sanfona { position: relative; }
+.menu-sanfona__painel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  border-radius: var(--md-radius-m);
+  box-shadow: var(--md-elevation-2);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+}
+.menu-sanfona__painel[hidden] { display: none; }
+.menu-sanfona__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--md-radius-s);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--md-on-surface);
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu-sanfona__item:hover { background: var(--md-background); }
+.menu-sanfona__item--sair { color: #b3261e; }
+.menu-sanfona__icon { font-size: 15px; }
+
+/* Relatorios */
+.rel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--md-surface-variant);
+}
+.rel-row:last-child { border-bottom: none; }
+.rel-row__nome { font-weight: 600; }
+.rel-row__valor { color: var(--md-on-surface-variant); }
+
 .kb-entry {
   font-size: 12px;
   padding: 8px;

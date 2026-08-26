@@ -7,8 +7,8 @@ from pydantic import BaseModel
 
 from . import auth
 from . import config as app_config
-from . import knowledge_base, orchestrator, store
-from .models import Message, new_id
+from . import knowledge_base, orchestrator, relatorios, store
+from .models import Message, new_id, now_iso
 
 app = FastAPI(title="AutoSeguro Agent API", version="1.0.0")
 
@@ -87,6 +87,7 @@ def _assumir_se_necessario(conv, sessao: dict) -> None:
     if conv.atendente_responsavel is not None:
         return
     conv.atendente_responsavel = sessao["nome"]
+    conv.atendente_assumiu_em = now_iso()
     saudacao = Message(
         id=new_id("msg"), role="atendente",
         text=f"Olá, eu sou {sessao['nome']}, vou te atender agora.",
@@ -254,6 +255,11 @@ def enviar_mensagem_atendente(
     conv.touch()
     store.log_event(conversation_id, "mensagem_atendente", {"message_id": msg.id, "texto": body.texto})
     return conv.to_public_dict()
+
+
+@app.get("/reports/summary")
+def relatorio_resumo(_sessao: dict = Depends(exigir_papel("atendente", "admin"))):
+    return relatorios.gerar_resumo(store.list_conversations())
 
 
 @app.get("/knowledge-base")
