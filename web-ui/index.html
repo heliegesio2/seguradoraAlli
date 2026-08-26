@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AutoSeguro — Simulador de Atendimento</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__title">
+        <span class="topbar__avatar">AS</span>
+        <div>
+          <div class="topbar__name">AutoSeguro — Vendas</div>
+          <div class="topbar__status" id="status-chip">iniciando…</div>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn btn--text" id="btn-nova-conversa" title="Iniciar nova conversa">Nova conversa</button>
+        <button class="btn btn--icon" id="btn-toggle-debug" title="Mostrar/ocultar rastreamento">⋮</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="chat">
+        <div class="chat__messages" id="messages"></div>
+
+        <div class="chat__composer">
+          <input
+            id="input-mensagem"
+            class="composer__input"
+            type="text"
+            placeholder="Digite uma mensagem como se fosse o lead…"
+            autocomplete="off"
+          />
+          <button class="btn btn--fab" id="btn-enviar" title="Enviar">➤</button>
+        </div>
+      </section>
+
+      <aside class="debug-panel" id="debug-panel">
+        <h2 class="debug-panel__title">Rastreamento</h2>
+
+        <div class="card">
+          <div class="card__label">Status da conversa</div>
+          <div class="card__value" id="debug-status">—</div>
+        </div>
+
+        <div class="card">
+          <div class="card__label">Dados coletados</div>
+          <pre class="card__pre" id="debug-slots">—</pre>
+        </div>
+
+        <div class="card">
+          <div class="card__label">Tentativas de cotação</div>
+          <div id="debug-attempts" class="debug-attempts">—</div>
+        </div>
+
+        <div class="card" id="handoff-card" hidden>
+          <div class="card__label">Handoff ativo</div>
+          <div class="card__value" id="debug-handoff-reason">—</div>
+          <p class="hint">Simule aqui o atendente humano resolvendo o caso. A resolução entra
+            como pendente na base de conhecimento até aprovação.</p>
+          <textarea id="input-solucao" class="composer__input composer__input--area"
+            placeholder="Como o atendente resolveu isso?"></textarea>
+          <input id="input-tags" class="composer__input" type="text"
+            placeholder="tags separadas por vírgula (ex: idade, limite, excecao)" />
+          <button class="btn btn--filled" id="btn-registrar-resolucao">Registrar resolução</button>
+        </div>
+
+        <div class="card">
+          <div class="card__label">Base de conhecimento (pendentes de aprovação)</div>
+          <div id="kb-pendentes">—</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

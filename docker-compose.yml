@@ -10,3 +10,24 @@ services:
       QUOTE_SLOW_SECONDS: "8"
       # QUOTE_SEED: "42"   # descomente p/ falhas reproduziveis
     restart: unless-stopped
+
+  agent-service:
+    build: ./agent-service
+    ports:
+      - "8001:8001"
+    environment:
+      QUOTE_SERVICE_URL: "http://quote-api:8000"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      CLAUDE_MODEL: "${CLAUDE_MODEL:-claude-opus-5}"
+      CLAUDE_EFFORT: "${CLAUDE_EFFORT:-low}"
+    depends_on:
+      - quote-api
+    restart: unless-stopped
+
+  web-ui:
+    build: ./web-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - agent-service
+    restart: unless-stopped

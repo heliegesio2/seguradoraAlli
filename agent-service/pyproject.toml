@@ -1,0 +1,11 @@
+[project]
+name = "agent-service"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.6",
+    "httpx",
+    "anthropic",
+]
