@@ -698,6 +698,126 @@ window.DOCS = {
             },
           ],
         },
+        {
+          id: "potencial-da-plataforma",
+          titulo: "Potencial da plataforma: múltiplos negócios e próximos passos",
+          atualizado: "26 de ago de 2026",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Resposta direta pra pergunta principal: <strong>dá pra adaptar pra outro negócio, mas " +
+                "hoje não é \"trocar uma configuração\" — é um fork com esforço moderado</strong>. A " +
+                "arquitetura já separa bem o que é genérico do que é específico de seguro de carro; o " +
+                "que falta é <em>externalizar</em> essa parte específica pra virar configuração de " +
+                "verdade. Este artigo mapeia os dois lados e fecha com sugestões de melhoria.",
+            },
+            { tipo: "h2", id: "o-que-ja-e-generico", titulo: "O que já é genérico (reaproveitável sem mudar nada)" },
+            {
+              tipo: "lista",
+              itens: [
+                "O <strong>padrão arquitetural</strong> em si — LLM só entende e fala, código decide " +
+                  "tudo — não tem nada de específico de seguro. Qualquer negócio que qualifica um lead, " +
+                  "consulta um sistema externo (preço, disponibilidade, elegibilidade) e decide entre " +
+                  "resolver sozinho ou escalar pra humano se encaixa no mesmo desenho.",
+                "Autenticação, perfis (admin/atendente), painel do atendente, relatórios com gráfico e " +
+                  "filtros, sistema de fotos — nada disso menciona seguro em lugar nenhum.",
+                "O <strong>loop de aprendizado</strong> da base de conhecimento (handoff → resolução → " +
+                  "aprovação → consulta) é genérico — funciona pra qualquer tipo de dúvida recorrente, " +
+                  "não só sinistro/apólice.",
+                "A persistência cifrada no MongoDB, o widget de chat, o encaminhamento pro WhatsApp " +
+                  "real, a documentação interna — toda a infraestrutura é agnóstica de domínio.",
+              ],
+            },
+            { tipo: "h2", id: "o-que-e-especifico-da-autoseguro", titulo: "O que é específico da AutoSeguro (precisaria mudar)" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>REQUIRED_SLOTS</code> e <code>_NOMES_SLOT</code> em <code>orchestrator.py</code> " +
+                  "— hoje é uma lista Python fixa (plano, idade, ano do veículo, CEP, data de início), " +
+                  "não um dado configurável.",
+                "<code>_PERGUNTA_PLANO</code>/<code>_OPCOES_PLANO</code> — texto e chips " +
+                  "Essencial/Completo/Premium hardcoded.",
+                "<code>quote_client.py</code> e <code>_apresentar_cotacao</code> — o formato do payload " +
+                  "enviado e o texto do preço apresentado são moldados exatamente na resposta do " +
+                  "<code>quote-service</code> deste desafio.",
+                "O próprio <code>quote-service</code> — é 100% a lógica de precificação de seguro auto; " +
+                  "pra outro negócio, seria <strong>substituído inteiro</strong> pela API de " +
+                  "preço/elegibilidade daquele negócio.",
+                "Gatilhos de handoff específicos (\"reclamação ou sinistro\", \"fora do escopo de seguro " +
+                  "auto\") em <code>_motivo_handoff</code>.",
+                "Marca \"AutoSeguro\" espalhada em vários arquivos do <code>web-ui</code> (nome, cores, " +
+                  "textos da landing) — hoje não está centralizada num único lugar de branding.",
+              ],
+            },
+            { tipo: "h2", id: "caminho-para-multi-negocio", titulo: "O caminho para virar multi-negócio de verdade" },
+            {
+              tipo: "p",
+              html:
+                "Pra um cliente novo <strong>hoje</strong>: forkar o repo, trocar o " +
+                "<code>quote-service</code> pela API do negócio novo, reescrever " +
+                "<code>REQUIRED_SLOTS</code>/opções de plano/template de preço, ajustar os gatilhos de " +
+                "handoff e trocar a marca no <code>web-ui</code>. Esforço de dias, não de meses — porque " +
+                "a máquina de estados, auth, relatórios e toda a infraestrutura continuam de pé.",
+            },
+            {
+              tipo: "p",
+              html:
+                "Pra <strong>uma instalação só atender vários negócios ao mesmo tempo</strong> " +
+                "(multi-tenant de verdade, escolhido por configuração): precisaria mover " +
+                "<code>REQUIRED_SLOTS</code>, as opções de plano e o template de preço pra um arquivo de " +
+                "configuração por \"tenant\" (mesmo padrão já usado em <code>config.py</code> pra " +
+                "<code>handoff_mode</code>), tornar a URL do serviço de cotação configurável por tenant, " +
+                "e parametrizar a marca (nome, cor, logo) do <code>web-ui</code>. É um passo de " +
+                "engenharia real, não uma mudança pequena — mas a base já está desenhada de um jeito " +
+                "que não exige reescrever o coração do sistema pra chegar lá.",
+            },
+            { tipo: "h2", id: "dicas-de-melhoria", titulo: "Dicas de melhoria e melhor aproveitamento" },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>Testes automatizados:</strong> hoje não existe nenhum (nem <code>pytest</code> " +
+                  "nem suite de testes) — <code>_motivo_handoff</code>, a validação de slots e o retry " +
+                  "de cotação são funções puras, fáceis de testar isoladamente, e é o maior gap de " +
+                  "qualidade do projeto hoje.",
+                "<strong>Base de conhecimento com embeddings</strong> em vez de palavras-chave — já " +
+                  "documentado como próximo passo natural (ver artigo sobre a base de conhecimento), " +
+                  "generaliza melhor pra paráfrases distantes.",
+                "<strong>Fila de mensageria</strong> (RabbitMQ ou similar) se o volume real justificar — " +
+                  "ver artigo de Segurança pra quando isso vale a pena.",
+                "<strong>Persistir conversas ativas</strong>, não só o log de auditoria — hoje uma " +
+                  "conversa em andamento se perde se o <code>agent-service</code> reiniciar no meio; " +
+                  "mover <code>Conversation</code>/<code>Message</code> pro Mongo (decifrando sob " +
+                  "demanda) resolveria isso.",
+                "<strong>Configuração multi-negócio</strong> — externalizar slots/planos/template de " +
+                  "preço como descrito acima, se o objetivo for reaproveitar a plataforma pra outros " +
+                  "clientes.",
+                "<strong>Auth de produção</strong> — 2FA, expiração de sessão, rate limit de tentativas " +
+                  "de login (já listado em Segurança, reforçando aqui como prioridade se isso for além " +
+                  "de um desafio técnico).",
+                "<strong>Observabilidade técnica</strong> — hoje os relatórios medem atendimento humano " +
+                  "(quem atendeu, nota), mas não há painel de saúde do próprio agente (taxa de " +
+                  "<code>erro_infra</code> por hora, latência média do Claude, quantas conversas ficam " +
+                  "presas em <code>aguardando_retry</code>) — útil pra saber se o sistema está saudável " +
+                  "sem precisar ler o log bruto.",
+                "<strong>Multi-canal</strong> — a mesma separação orchestrator/LLM que já atende site e " +
+                  "WhatsApp poderia estender pra outros canais (Instagram, Telegram) sem tocar na lógica " +
+                  "de negócio, só na camada de transporte.",
+              ],
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>README.md</code>, seção \"Próximos passos / limitações conhecidas\".",
+                "Artigo <strong>Segurança: o que foi implementado</strong> — limitações conhecidas e a " +
+                  "análise de RabbitMQ.",
+                "Artigo <strong>Dá pra trocar a Anthropic por outra IA?</strong> — mesmo raciocínio de " +
+                  "\"o que é genérico vs. o que é específico\", aplicado ao provedor de IA.",
+              ],
+            },
+          ],
+        },
       ],
     },
     {
