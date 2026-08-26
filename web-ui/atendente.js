@@ -12,6 +12,7 @@
     linkAdmin: document.getElementById("link-admin"),
     linkUsuarios: document.getElementById("link-usuarios"),
     btnSair: document.getElementById("btn-sair"),
+    btnSairTopo: document.getElementById("btn-sair-topo"),
     conexaoStatus: document.getElementById("conexao-status"),
     convCount: document.getElementById("conv-count"),
     listItems: document.getElementById("conv-list-items"),
@@ -450,6 +451,7 @@
     el.linkUsuarios.hidden = true;
   }
   el.btnSair.addEventListener("click", () => window.logoutStaff());
+  el.btnSairTopo.addEventListener("click", () => window.logoutStaff());
 
   poll();
   setInterval(poll, POLL_MS);
