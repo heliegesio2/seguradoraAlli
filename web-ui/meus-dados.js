@@ -57,6 +57,8 @@
       fotoSelecionada = undefined;
       el.inputFoto.value = "";
       renderFotoAtual();
+      const bolinhaTopbar = document.getElementById("topbar-avatar-usuario");
+      if (bolinhaTopbar) bolinhaTopbar.innerHTML = window.avatarHtml(sessao.nome, sessao.foto, 34);
       el.sucesso.textContent = foto ? "Foto atualizada!" : "Foto removida.";
       el.sucesso.hidden = false;
     } catch (err) {

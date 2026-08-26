@@ -11,6 +11,27 @@ window.avatarHtml = function avatarHtml(nome, foto, tamanho = 32) {
   return `<span class="avatar avatar--fallback" style="${estilo}">${inicial}</span>`;
 };
 
+// Bolinha clicavel na topbar com a foto do usuario logado - leva direto para
+// "Meus dados" (trocar a foto). Roda sozinho ao carregar o script; so precisa
+// que a pagina tenha um elemento <a id="topbar-avatar-usuario">. Fica
+// deliberadamente fora do menu sanfona - e um atalho sempre visivel, igual o
+// padrao comum de "avatar no canto" de outros paineis.
+(() => {
+  const el = document.getElementById("topbar-avatar-usuario");
+  if (!el) return;
+  try {
+    const chave = window.AUTH_KEY || "autoseguro_staff_session";
+    const sessao = JSON.parse(sessionStorage.getItem(chave) || "null");
+    if (!sessao) {
+      el.hidden = true;
+      return;
+    }
+    el.innerHTML = window.avatarHtml(sessao.nome, sessao.foto, 34);
+  } catch {
+    el.hidden = true;
+  }
+})();
+
 // Le um <input type="file"> como data URI, com validacao de tipo/tamanho no
 // proprio navegador (o backend valida de novo, isso e so pra dar feedback
 // rapido sem round-trip). Resolve null se nenhum arquivo foi escolhido.

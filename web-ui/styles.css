@@ -148,6 +148,16 @@ html, body {
   font-weight: 700;
 }
 
+/* Bolinha da topbar com a foto de quem esta logado - leva para Meus dados. */
+.topbar-avatar-link {
+  display: flex;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.6);
+  transition: box-shadow 120ms ease;
+}
+.topbar-avatar-link:hover { box-shadow: 0 0 0 2px rgba(255,255,255,0.95); }
+.topbar-avatar-link[hidden] { display: none; }
+
 /* Mensagem de sucesso inline em formularios (Usuarios, Meus dados etc). */
 .sucesso-msg { color: #146c43; font-size: 13px; margin: 10px 0 0; }
 .sucesso-msg[hidden] { display: none; }
