@@ -10,6 +10,7 @@ Status = Literal[
     "aguardando_retry",  # falha de infra esgotou tentativas; lead decide se tenta de novo
     "cotado",            # cotacao apresentada, aguardando reacao do lead
     "recusa_negocio",    # recusa de subscricao explicada, aguardando reacao do lead
+    "triagem_handoff",   # coletando nome + descricao do problema antes de decidir escalar
     "handoff",           # encaminhado para atendente humano
     "fechado",           # lead aceitou a cotacao
     "perdido",           # lead recusou/desistiu apos ver a cotacao
@@ -30,9 +31,15 @@ def now_iso() -> str:
 @dataclass
 class Message:
     id: str
-    role: Literal["lead", "agent", "sistema"]
+    role: Literal["lead", "agent", "sistema", "atendente"]
     text: str
     timestamp: str = field(default_factory=now_iso)
+    options: list[dict[str, str]] | None = None
+    """Respostas rapidas sugeridas (ex: escolha de plano) - a UI renderiza como
+    chips clicaveis em vez de exigir texto livre. None quando a pergunta e aberta."""
+    oculto_para_atendente: bool = False
+    """Mensagens de transicao (ex: 'vou te passar para um atendente') sao ruido
+    na tela de quem ja E o atendente - ficam ocultas so nessa view, nao no widget do lead."""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -60,6 +67,9 @@ class Conversation:
     quote_attempts: list[QuoteAttempt] = field(default_factory=list)
     last_quote_result: dict[str, Any] | None = None
     handoff_reason: str | None = None
+    handoff_problema: str | None = None
+    pre_handoff_status: Status | None = None
+    lead_nome: str | None = None
     misunderstanding_count: int = 0
     created_at: str = field(default_factory=now_iso)
     updated_at: str = field(default_factory=now_iso)
@@ -80,5 +90,7 @@ class Conversation:
             "quote_attempts": [q.to_dict() for q in self.quote_attempts],
             "last_quote_result": self.last_quote_result,
             "handoff_reason": self.handoff_reason,
+            "handoff_problema": self.handoff_problema,
+            "lead_nome": self.lead_nome,
             "updated_at": self.updated_at,
         }

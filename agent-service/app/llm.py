@@ -34,6 +34,7 @@ _EXTRACT_TOOL = {
                 },
                 "additionalProperties": False,
             },
+            "nome_lead": {"type": "string", "description": "Nome do lead, apenas se ele se identificou explicitamente nesta mensagem (ex: 'sou o Joao', 'meu nome e Maria'). Omita se nao disse."},
             "pedido_humano_explicito": {"type": "boolean"},
             "fora_do_escopo": {"type": "boolean", "description": "Mensagem sem relacao com contratar/cotar seguro auto"},
             "reclamacao_ou_sinistro": {"type": "boolean"},
@@ -94,7 +95,10 @@ _REPLY_SYSTEM = """Voce e um assistente de vendas da AutoSeguro conversando por 
 WhatsApp. Tom: direto, cordial, frases curtas de mensagem de WhatsApp, sem emojis \
 em excesso. Regra inegociavel: NUNCA invente valores de preco, prazos, coberturas, \
 franquias ou qualquer numero. Use apenas os fatos fornecidos explicitamente na \
-instrucao. Se a instrucao nao trouxer um numero, nao mencione numero nenhum."""
+instrucao. Se a instrucao nao trouxer um numero, nao mencione numero nenhum. \
+Responda so a mensagem que o lead vai ler - nunca inclua comentarios sobre a sua \
+propria resposta (nada de "Obs:", notas explicando o que voce manteve/decidiu, ou \
+qualquer meta-comentario fora do personagem)."""
 
 
 def gerar_resposta(instrucao: str, fatos: dict[str, Any] | None = None) -> str:

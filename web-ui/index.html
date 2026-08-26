@@ -3,80 +3,140 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AutoSeguro — Simulador de Atendimento</title>
+<title>AutoSeguro — Seguro de carro sem burocracia</title>
 <link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="landing.css" />
+<link rel="stylesheet" href="widget.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="topbar__title">
-        <span class="topbar__avatar">AS</span>
-        <div>
-          <div class="topbar__name">AutoSeguro — Vendas</div>
-          <div class="topbar__status" id="status-chip">iniciando…</div>
+  <header class="nav">
+    <div class="nav__brand">
+      <span class="nav__logo">AS</span>
+      <span class="nav__name">AutoSeguro</span>
+    </div>
+    <nav class="nav__links">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#vantagens">Vantagens</a>
+      <a href="atendente.html" class="nav__staff">Área do atendente</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero__copy">
+        <p class="hero__eyebrow">Seguro auto, direto ao ponto</p>
+        <h1 class="hero__title">Cotação de verdade em minutos, sem sair da página.</h1>
+        <p class="hero__subtitle">
+          Conte sobre o seu carro pelo chat e receba um valor real, consultado
+          na hora. Se o seu caso precisar de um humano, a gente te leva para o
+          WhatsApp — sem enrolação.
+        </p>
+        <div class="hero__actions">
+          <button class="btn btn--filled btn--lg" id="btn-abrir-chat">Iniciar conversa</button>
+          <a class="hero__link" href="#como-funciona">Ver como funciona ↓</a>
         </div>
       </div>
-      <div class="topbar__actions">
-        <button class="btn btn--text" id="btn-nova-conversa" title="Iniciar nova conversa">Nova conversa</button>
-        <button class="btn btn--icon" id="btn-toggle-debug" title="Mostrar/ocultar rastreamento">⋮</button>
+      <div class="hero__art" aria-hidden="true">
+        <div class="hero__card">
+          <div class="hero__card-row hero__card-row--lead">Quero cotar o seguro do meu Onix 2021</div>
+          <div class="hero__card-row hero__card-row--agent">Perfeito! Me conta seu CEP e a data que quer começar a vigência.</div>
+          <div class="hero__card-row hero__card-row--quote">R$ 187,40/mês · plano Essencial</div>
+        </div>
       </div>
-    </header>
+    </section>
 
-    <main class="content">
-      <section class="chat">
-        <div class="chat__messages" id="messages"></div>
-
-        <div class="chat__composer">
-          <input
-            id="input-mensagem"
-            class="composer__input"
-            type="text"
-            placeholder="Digite uma mensagem como se fosse o lead…"
-            autocomplete="off"
-          />
-          <button class="btn btn--fab" id="btn-enviar" title="Enviar">➤</button>
+    <section class="section" id="como-funciona">
+      <h2 class="section__title">Como funciona</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="step__number">1</span>
+          <h3>Conte sobre o seu carro</h3>
+          <p>Plano desejado, idade, ano do veículo, CEP e data de início. Leva menos de um minuto.</p>
         </div>
-      </section>
-
-      <aside class="debug-panel" id="debug-panel">
-        <h2 class="debug-panel__title">Rastreamento</h2>
-
-        <div class="card">
-          <div class="card__label">Status da conversa</div>
-          <div class="card__value" id="debug-status">—</div>
+        <div class="step">
+          <span class="step__number">2</span>
+          <h3>Receba a cotação na hora</h3>
+          <p>Consultamos a seguradora em tempo real. O preço que você vê é sempre o preço de verdade — nunca estimado por IA.</p>
         </div>
-
-        <div class="card">
-          <div class="card__label">Dados coletados</div>
-          <pre class="card__pre" id="debug-slots">—</pre>
+        <div class="step">
+          <span class="step__number">3</span>
+          <h3>Feche ou fale com um atendente</h3>
+          <p>Pode fechar direto pelo chat. Se preferir negociar ou o caso for especial, encaminhamos para um atendente no WhatsApp.</p>
         </div>
+      </div>
+    </section>
 
-        <div class="card">
-          <div class="card__label">Tentativas de cotação</div>
-          <div id="debug-attempts" class="debug-attempts">—</div>
+    <section class="section section--muted" id="vantagens">
+      <h2 class="section__title">Por que a AutoSeguro</h2>
+      <div class="cards">
+        <div class="feature-card">
+          <h3>Transparência</h3>
+          <p>Nunca inventamos preço. Se o sistema de cotação está fora do ar, a gente avisa — não chuta um número.</p>
         </div>
+        <div class="feature-card">
+          <h3>Agilidade</h3>
+          <p>Respostas em segundos. Se a cotação falhar por instabilidade, tentamos de novo automaticamente.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Humano quando precisa</h3>
+          <p>Reclamações, sinistros, pedidos de desconto ou casos fora do script vão direto para um atendente de verdade.</p>
+        </div>
+      </div>
+    </section>
+  </main>
 
-        <div class="card" id="handoff-card" hidden>
-          <div class="card__label">Handoff ativo</div>
-          <div class="card__value" id="debug-handoff-reason">—</div>
-          <p class="hint">Simule aqui o atendente humano resolvendo o caso. A resolução entra
-            como pendente na base de conhecimento até aprovação.</p>
-          <textarea id="input-solucao" class="composer__input composer__input--area"
-            placeholder="Como o atendente resolveu isso?"></textarea>
-          <input id="input-tags" class="composer__input" type="text"
-            placeholder="tags separadas por vírgula (ex: idade, limite, excecao)" />
-          <button class="btn btn--filled" id="btn-registrar-resolucao">Registrar resolução</button>
-        </div>
+  <footer class="footer">
+    <div>AutoSeguro Corretora de Seguros Ltda. — CNPJ 00.000.000/0001-00</div>
+    <div class="footer__muted">Atendimento de segunda a sexta, 8h às 20h.</div>
+  </footer>
 
-        <div class="card">
-          <div class="card__label">Base de conhecimento (pendentes de aprovação)</div>
-          <div id="kb-pendentes">—</div>
-        </div>
-      </aside>
-    </main>
+  <!-- Widget de chat flutuante -->
+  <div class="widget" id="widget" hidden>
+    <div class="widget__header">
+      <span class="widget__avatar">AS</span>
+      <div class="widget__header-text">
+        <div class="widget__name">AutoSeguro</div>
+        <div class="widget__status" id="widget-status">online</div>
+      </div>
+      <button class="btn btn--icon widget__close" id="btn-fechar-widget" title="Fechar" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="widget__messages" id="widget-messages"></div>
+
+    <div class="widget__handoff" id="widget-handoff" hidden>
+      <p id="widget-handoff-texto">Esse caso precisa de um atendente humano.</p>
+      <a class="btn btn--filled btn--handoff" id="widget-handoff-link" target="_blank" rel="noopener">
+        Abrir atendimento
+      </a>
+    </div>
+
+    <div class="widget__composer">
+      <input
+        id="widget-input"
+        class="composer__input"
+        type="text"
+        placeholder="Digite ou fale sua mensagem…"
+        autocomplete="off"
+      />
+      <button class="btn btn--icon btn--mic" id="widget-mic" title="Falar" aria-label="Gravar áudio">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/>
+          <path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.93V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.07A7 7 0 0 0 19 11z"/>
+        </svg>
+      </button>
+      <button class="btn btn--fab" id="widget-enviar" title="Enviar" aria-label="Enviar">➤</button>
+    </div>
   </div>
 
+  <button class="whatsapp-fab" id="btn-whatsapp-fab" title="Fale com a gente" aria-label="Abrir chat">
+    <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff" aria-hidden="true">
+      <path d="M16.01 3C9.38 3 4 8.38 4 15.01c0 2.35.66 4.61 1.9 6.59L4 29l7.6-1.85a12.9 12.9 0 0 0 4.41.78h.01c6.63 0 12.01-5.38 12.01-12.01C28.03 8.38 22.65 3 16.01 3zm0 21.94h-.01a10.9 10.9 0 0 1-5.55-1.52l-.4-.24-4.51 1.1 1.2-4.39-.26-.45a10.9 10.9 0 0 1-1.67-5.83c0-6.02 4.9-10.92 10.94-10.92 2.92 0 5.66 1.14 7.73 3.21a10.85 10.85 0 0 1 3.2 7.73c0 6.02-4.9 10.91-10.93 10.91zm5.99-8.17c-.33-.16-1.94-.96-2.24-1.07-.3-.11-.52-.16-.74.17-.22.32-.85 1.07-1.04 1.29-.19.22-.38.24-.71.08-.33-.16-1.38-.51-2.63-1.63-.97-.87-1.63-1.94-1.82-2.27-.19-.32-.02-.5.14-.66.15-.15.33-.38.49-.57.16-.19.22-.32.33-.54.11-.22.05-.41-.03-.57-.08-.16-.74-1.78-1.01-2.44-.27-.64-.54-.55-.74-.56-.19-.01-.41-.01-.63-.01a1.2 1.2 0 0 0-.87.41c-.3.32-1.14 1.12-1.14 2.73 0 1.61 1.17 3.17 1.33 3.39.16.22 2.3 3.51 5.57 4.92.78.34 1.39.54 1.86.69.78.25 1.49.21 2.05.13.63-.09 1.94-.79 2.21-1.56.27-.76.27-1.42.19-1.56-.08-.14-.3-.22-.63-.38z"/>
+    </svg>
+    <span class="whatsapp-fab__pulse"></span>
+  </button>
+
   <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="speech.js"></script>
+  <script src="widget.js"></script>
 </body>
 </html>

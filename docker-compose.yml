@@ -20,6 +20,10 @@ services:
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
       CLAUDE_MODEL: "${CLAUDE_MODEL:-claude-opus-5}"
       CLAUDE_EFFORT: "${CLAUDE_EFFORT:-low}"
+      # "site" (padrao): handoff humano continua no chat do site, sem custo de
+      # WhatsApp Business API. "whatsapp": encaminha para o numero real abaixo.
+      HANDOFF_MODE: "${HANDOFF_MODE:-site}"
+      WHATSAPP_BUSINESS_NUMBER: "${WHATSAPP_BUSINESS_NUMBER:-}"
     depends_on:
       - quote-api
     restart: unless-stopped

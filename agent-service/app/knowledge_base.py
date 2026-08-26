@@ -61,9 +61,12 @@ def buscar_caso_similar(motivo: str, mensagem_lead: str) -> tuple[dict[str, Any]
     return None, 0
 
 
-def registrar_resolucao_pendente(conversation_id: str, motivo: str, tags: list[str], solucao: str) -> dict[str, Any]:
+def registrar_resolucao_pendente(conversation_id: str, motivo: str, problema: str, solucao: str) -> dict[str, Any]:
     """Atendente humano registra como resolveu um handoff. Entra como pendente
-    (aprovado=False) ate revisao - evita que uma resolucao ruim vire aprendizado ruim."""
+    (aprovado=False) ate revisao - evita que uma resolucao ruim vire aprendizado ruim.
+    Tags sao derivadas automaticamente do motivo + problema relatado (sem exigir
+    digitacao manual do atendente)."""
+    tags = sorted(_tokenize(motivo) | _tokenize(problema))
     entries = _load()
     entry = {
         "id": new_id("kb"),

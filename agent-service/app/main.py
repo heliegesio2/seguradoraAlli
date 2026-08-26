@@ -4,7 +4,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from . import config as app_config
 from . import knowledge_base, orchestrator, store
+from .models import Message, new_id
 
 app = FastAPI(title="AutoSeguro Agent API", version="1.0.0")
 
@@ -22,12 +24,21 @@ class MensagemRequest(BaseModel):
 
 class ResolucaoRequest(BaseModel):
     solucao: str
-    tags: list[str] = []
 
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/config")
+def obter_config():
+    """Config publica que a UI le em vez de hardcodar - fonte de verdade e o
+    .env do agent-service (ver app/config.py)."""
+    return {
+        "handoff_mode": app_config.HANDOFF_MODE,
+        "whatsapp_business_number": app_config.WHATSAPP_BUSINESS_NUMBER,
+    }
 
 
 @app.post("/conversations")
@@ -68,10 +79,24 @@ def resolver_handoff(conversation_id: str, body: ResolucaoRequest):
     if conv.status != "handoff":
         raise HTTPException(status_code=400, detail="Conversa nao esta em handoff")
     entry = knowledge_base.registrar_resolucao_pendente(
-        conversation_id, conv.handoff_reason or "", body.tags, body.solucao
+        conversation_id, conv.handoff_reason or "", conv.handoff_problema or "", body.solucao
     )
     store.log_event(conversation_id, "resolucao_humana_registrada", {"kb_entry_id": entry["id"]})
     return entry
+
+
+@app.post("/conversations/{conversation_id}/attendant-messages")
+def enviar_mensagem_atendente(conversation_id: str, body: MensagemRequest):
+    """Mensagem escrita ao vivo pelo atendente humano, direto para o lead - nao
+    passa pelo orchestrator/LLM, e o atendente falando por si mesmo."""
+    conv = store.get_conversation(conversation_id)
+    if conv is None:
+        raise HTTPException(status_code=404, detail="Conversa nao encontrada")
+    msg = Message(id=new_id("msg"), role="atendente", text=body.texto)
+    conv.messages.append(msg)
+    conv.touch()
+    store.log_event(conversation_id, "mensagem_atendente", {"message_id": msg.id, "texto": body.texto})
+    return conv.to_public_dict()
 
 
 @app.get("/knowledge-base")

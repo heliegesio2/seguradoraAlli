@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel do atendente — AutoSeguro</title>
+<link rel="icon" id="favicon" href="data:," />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="atendente.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__title">
+        <span class="topbar__avatar">AS</span>
+        <div>
+          <div class="topbar__name">Painel do atendente</div>
+          <div class="topbar__status" id="conexao-status">conectando…</div>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <a class="btn btn--text" href="index.html">Ver site</a>
+        <button class="btn btn--text" id="btn-toggle-kb">Base de conhecimento</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <aside class="conv-list" id="conv-list">
+        <div class="conv-list__header">Conversas <span id="conv-count">(0)</span></div>
+        <div class="conv-list__items" id="conv-list-items">
+          <div class="conv-list__empty">Nenhuma conversa ainda.</div>
+        </div>
+      </aside>
+
+      <section class="conv-detail" id="conv-detail">
+        <div class="conv-detail__empty" id="conv-detail-empty">
+          Selecione uma conversa na lista ao lado.
+        </div>
+
+        <div class="conv-detail__body" id="conv-detail-body" hidden>
+          <div class="conv-detail__header">
+            <div>
+              <div class="conv-detail__id" id="detail-id">—</div>
+              <div class="conv-detail__status" id="detail-status">—</div>
+            </div>
+          </div>
+
+          <div class="conv-detail__grid">
+            <div class="conv-detail__main">
+              <div class="chat__messages conv-detail__messages" id="detail-messages"></div>
+
+              <div class="chat__composer">
+                <input
+                  id="detail-input"
+                  class="composer__input"
+                  type="text"
+                  placeholder="Responder ao lead…"
+                  autocomplete="off"
+                />
+                <button class="btn btn--icon btn--mic" id="detail-mic" title="Falar" aria-label="Gravar áudio">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                    <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/>
+                    <path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.93V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.07A7 7 0 0 0 19 11z"/>
+                  </svg>
+                </button>
+                <button class="btn btn--fab" id="detail-enviar" title="Enviar" aria-label="Enviar">➤</button>
+              </div>
+            </div>
+
+            <aside class="debug-panel conv-detail__side">
+              <div class="card">
+                <div class="card__label">Dados coletados</div>
+                <pre class="card__pre" id="detail-slots">—</pre>
+              </div>
+
+              <div class="card">
+                <div class="card__label">Tentativas de cotação</div>
+                <div id="detail-attempts" class="debug-attempts">—</div>
+              </div>
+
+              <div class="card" id="detail-handoff-card" hidden>
+                <div class="card__label">Handoff ativo</div>
+                <div class="card__value" id="detail-handoff-reason">—</div>
+                <div class="card__label" style="margin-top:8px">Problema relatado pelo lead</div>
+                <div id="detail-handoff-problema">—</div>
+                <p class="hint">Registre como você resolveu para liberar o caso e alimentar
+                  a base de conhecimento (fica pendente até aprovação; as tags são geradas
+                  automaticamente a partir do motivo e do problema relatado).</p>
+                <div class="composer__row">
+                  <textarea id="input-solucao" class="composer__input composer__input--area"
+                    placeholder="Como você resolveu isso?"></textarea>
+                  <button class="btn btn--icon btn--mic" id="solucao-mic" title="Falar" aria-label="Gravar áudio">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                      <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/>
+                      <path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.93V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.07A7 7 0 0 0 19 11z"/>
+                    </svg>
+                  </button>
+                </div>
+                <button class="btn btn--filled" id="btn-registrar-resolucao">Registrar resolução</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <aside class="debug-panel kb-panel" id="kb-panel" hidden>
+        <h2 class="debug-panel__title">Base de conhecimento</h2>
+        <div class="card">
+          <div class="card__label">Pendentes de aprovação</div>
+          <div id="kb-pendentes">—</div>
+        </div>
+        <div class="card">
+          <div class="card__label">Aprovadas</div>
+          <div id="kb-aprovadas">—</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="speech.js"></script>
+  <script src="atendente.js"></script>
+</body>
+</html>

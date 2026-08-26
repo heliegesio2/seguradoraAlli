@@ -21,6 +21,15 @@ _NOMES_SLOT = {
     "data_inicio": "a data desejada para o inicio da vigencia (formato AAAA-MM-DD)",
 }
 
+# Pergunta de plano e template fixo (nao LLM): as opcoes precisam bater exatamente
+# com o enum aceito pelo quote-service (ver quote-service/app/main.py).
+_PERGUNTA_PLANO = "Qual plano você prefere: Essencial, Completo ou Premium?"
+_OPCOES_PLANO = [
+    {"label": "Essencial", "value": "Quero o plano Essencial"},
+    {"label": "Completo", "value": "Quero o plano Completo"},
+    {"label": "Premium", "value": "Quero o plano Premium"},
+]
+
 
 def _historico(conv: Conversation, ultimas: int = 12) -> str:
     linhas = []
@@ -97,31 +106,77 @@ def _apresentar_cotacao(dados: dict[str, Any]) -> str:
     return "\n".join(linhas)
 
 
-def _ir_para_handoff(conv: Conversation, motivo: str, mensagem_lead: str) -> str:
-    caso, score = knowledge_base.buscar_caso_similar(motivo, mensagem_lead)
-    if caso is not None:
-        log_event(conv.id, "kb_aplicado", {"case_id": caso["id"], "score": score})
-        resposta = llm.gerar_resposta(
-            "Responda ao lead usando a solucao conhecida abaixo, adaptando o tom para WhatsApp. "
-            "Nao adicione informacoes que nao estejam na solucao.",
-            fatos={"situacao": motivo, "solucao_conhecida": caso["solucao"]},
-        )
-        return resposta
-
+def _escalar_para_handoff(conv: Conversation, motivo: str) -> str:
+    """Escalonamento definitivo para atendente humano (sem checar KB - isso ja
+    aconteceu antes, na triagem, ou nao se aplica como no bug interno de payload)."""
     conv.status = "handoff"
     conv.handoff_reason = motivo
-    candidato_baixa_confianca, score_baixa = knowledge_base.melhor_candidato(motivo, mensagem_lead)
-    if score_baixa == 0:
-        candidato_baixa_confianca = None
+    conv.pre_handoff_status = None
     log_event(conv.id, "handoff", {
         "motivo": motivo,
-        "candidato_kb_baixa_confianca": candidato_baixa_confianca["id"] if candidato_baixa_confianca else None,
+        "nome_lead": conv.lead_nome,
+        "problema": conv.handoff_problema,
     })
     return llm.gerar_resposta(
-        "Informe ao lead, de forma cordial, que voce vai encaminhar a conversa para um atendente "
-        "humano continuar, e explique o motivo em uma frase.",
-        fatos={"motivo_handoff": motivo},
+        "Informe ao lead, de forma cordial e breve, que um atendente humano vai continuar a "
+        "conversa a partir daqui.",
+        fatos={"motivo_handoff": motivo, "nome_lead": conv.lead_nome, "problema_relatado": conv.handoff_problema},
     )
+
+
+def _entrar_em_triagem_handoff(conv: Conversation, motivo: str, sinais: dict[str, Any]) -> str:
+    """Primeira deteccao de que o lead precisa de humano: NAO escala direto -
+    antes coleta nome (se nao tiver) e a descricao do problema, para so entao
+    checar a base de conhecimento e decidir entre resolver sozinho ou escalar."""
+    conv.pre_handoff_status = conv.status
+    conv.status = "triagem_handoff"
+    conv.handoff_reason = motivo
+    conv.handoff_problema = None
+
+    if sinais.get("nome_lead"):
+        conv.lead_nome = sinais["nome_lead"]
+
+    if conv.lead_nome is None:
+        return llm.gerar_resposta(
+            "O lead sinalizou que precisa falar com um atendente humano. Antes de encaminhar, "
+            "peca educadamente o nome dele. Faca somente essa pergunta, em uma linha curta de WhatsApp."
+        )
+    return llm.gerar_resposta(
+        "Peca ao lead, em uma linha curta de WhatsApp, para descrever qual e o problema ou "
+        "duvida que ele tem - assim voce ve se ja consegue ajudar direto, sem precisar de um "
+        "atendente humano."
+    )
+
+
+def _avancar_triagem_handoff(conv: Conversation, texto_lead: str, nome_ja_era_conhecido: bool) -> str:
+    """Chamado nas mensagens seguintes, com a conversa ja em triagem_handoff -
+    texto_lead e sempre a resposta a pergunta anterior (nome ou problema). A
+    captura oportunista de nome_lead ja aconteceu em handle_message antes desta
+    chamada; nome_ja_era_conhecido reflete o estado ANTES dessa captura, para
+    diferenciar "acabou de dar o nome agora" de "ja sabiamos de antes"."""
+    if not nome_ja_era_conhecido:
+        if conv.lead_nome is None:
+            conv.lead_nome = texto_lead.strip()[:60] or None
+        return llm.gerar_resposta(
+            "Agradeca pelo nome e peca, em uma linha curta de WhatsApp, para descrever qual e "
+            "o problema ou duvida que ele tem.",
+            fatos={"nome_lead": conv.lead_nome},
+        )
+
+    conv.handoff_problema = texto_lead
+    caso, score = knowledge_base.buscar_caso_similar(conv.handoff_reason or "", conv.handoff_problema)
+    if caso is not None:
+        log_event(conv.id, "kb_aplicado", {"case_id": caso["id"], "score": score})
+        conv.status = conv.pre_handoff_status or "coletando_dados"
+        conv.pre_handoff_status = None
+        return llm.gerar_resposta(
+            "Responda ao lead usando a solucao conhecida abaixo. Deixe claro que esse e o "
+            "procedimento correto e que nao e necessario falar com um atendente para isso. "
+            "Adapte o tom para WhatsApp, sem adicionar informacoes que nao estejam na solucao.",
+            fatos={"situacao": conv.handoff_reason, "solucao_conhecida": caso["solucao"]},
+        )
+
+    return _escalar_para_handoff(conv, conv.handoff_reason or "handoff solicitado pelo lead")
 
 
 def _executar_cotacao(conv: Conversation) -> str:
@@ -173,8 +228,23 @@ def _executar_cotacao(conv: Conversation) -> str:
             "e que voce vai tentar novamente assim que ele responder. Nao mencione nenhum valor."
         )
 
-    # payload_invalido: bug nosso, nao do lead. Nao adianta repetir - vai para humano.
-    return _ir_para_handoff(conv, "falha ao montar os dados da cotacao (payload invalido)", "")
+    # payload_invalido: bug nosso, nao do lead. Nao adianta repetir - vai direto para
+    # humano, sem triagem (nao faz sentido pedir "qual seu problema" para um bug interno).
+    return _escalar_para_handoff(conv, "falha ao montar os dados da cotacao (payload invalido)")
+
+
+def _proxima_pergunta_slot(conv: Conversation) -> tuple[str, list[dict[str, str]] | None]:
+    """Pergunta apenas o PROXIMO dado que falta (nunca todos de uma vez). O plano
+    vem com opcoes fixas (chips); os demais campos ficam abertos para texto/audio."""
+    proximo = conv.missing_slots()[0]
+    if proximo == "plano_id":
+        return _PERGUNTA_PLANO, _OPCOES_PLANO
+    resposta = llm.gerar_resposta(
+        f"Peca ao lead, em uma mensagem curta e direta de WhatsApp, apenas o seguinte "
+        f"dado que falta para gerar a cotacao: {_NOMES_SLOT[proximo]}. Faca so essa "
+        f"pergunta - nao mencione nenhum outro dado nesta mensagem."
+    )
+    return resposta, None
 
 
 def handle_message(conv: Conversation, texto_lead: str) -> str:
@@ -182,11 +252,20 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
     conv.messages.append(msg)
     log_event(conv.id, "mensagem_recebida", {"message_id": msg.id, "texto": texto_lead})
 
+    # Precisa ser capturado ANTES da extracao/captura oportunista de nome abaixo,
+    # senao a triagem nunca consegue distinguir "acabou de dar o nome agora" de
+    # "ja sabiamos o nome de uma mensagem anterior" (ambos ficariam com lead_nome
+    # setado no momento em que _avancar_triagem_handoff for chamado).
+    nome_ja_era_conhecido = conv.lead_nome is not None
+
     sinais = llm.extrair(_historico(conv), conv.slots)
 
     for campo, valor in (sinais.get("slots_atualizados") or {}).items():
         if campo in REQUIRED_SLOTS and valor not in (None, ""):
             conv.slots[campo] = valor
+
+    if sinais.get("nome_lead"):
+        conv.lead_nome = sinais["nome_lead"]
 
     if sinais.get("confianca_interpretacao") == "baixa":
         conv.misunderstanding_count += 1
@@ -197,12 +276,20 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
     if motivo is None and conv.misunderstanding_count >= MISUNDERSTANDING_LIMIT:
         motivo = "varias mensagens seguidas nao foram compreendidas com confianca"
 
-    if motivo is not None:
-        resposta = _ir_para_handoff(conv, motivo, texto_lead)
+    if motivo is not None and conv.status not in ("triagem_handoff", "handoff"):
+        resposta = _entrar_em_triagem_handoff(conv, motivo, sinais)
         _finalizar(conv, resposta)
         return resposta
 
-    if conv.status == "cotado":
+    opcoes: list[dict[str, str]] | None = None
+    oculto = False
+
+    if conv.status == "triagem_handoff":
+        resposta = _avancar_triagem_handoff(conv, texto_lead, nome_ja_era_conhecido)
+        if conv.status == "handoff":
+            oculto = True
+
+    elif conv.status == "cotado":
         if sinais.get("quer_aceitar_cotacao"):
             conv.status = "fechado"
             log_event(conv.id, "fechamento", {})
@@ -250,11 +337,7 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
     else:  # coletando_dados (estado inicial/padrao)
         faltando = conv.missing_slots()
         if faltando:
-            pedidos = "; ".join(_NOMES_SLOT[c] for c in faltando)
-            resposta = llm.gerar_resposta(
-                f"Peca ao lead, em uma mensagem curta de WhatsApp, os seguintes dados que ainda "
-                f"faltam para gerar a cotacao: {pedidos}."
-            )
+            resposta, opcoes = _proxima_pergunta_slot(conv)
         else:
             erro = _validar_slots(conv.slots)
             if erro:
@@ -266,11 +349,19 @@ def handle_message(conv: Conversation, texto_lead: str) -> str:
             else:
                 resposta = _executar_cotacao(conv)
 
-    _finalizar(conv, resposta)
+    _finalizar(conv, resposta, opcoes, oculto)
     return resposta
 
 
-def _finalizar(conv: Conversation, resposta: str) -> None:
-    conv.messages.append(Message(id=new_id("msg"), role="agent", text=resposta))
+def _finalizar(
+    conv: Conversation,
+    resposta: str,
+    opcoes: list[dict[str, str]] | None = None,
+    oculto_para_atendente: bool = False,
+) -> None:
+    conv.messages.append(Message(
+        id=new_id("msg"), role="agent", text=resposta, options=opcoes,
+        oculto_para_atendente=oculto_para_atendente,
+    ))
     conv.touch()
     log_event(conv.id, "resposta_enviada", {"status": conv.status})
