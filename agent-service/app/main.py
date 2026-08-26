@@ -107,11 +107,15 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/auth/register")
-def cadastrar(body: CadastroRequest):
-    """Auto-cadastro do painel interno - a propria pessoa escolhe o perfil
-    (admin ou atendente) no formulario. Retorna ja logado (mesma forma de
-    /auth/login), pra nao precisar de uma segunda tela so pra entrar."""
+@app.get("/auth/users")
+def listar_usuarios(_sessao: dict = Depends(exigir_papel("admin"))):
+    return auth.listar_usuarios()
+
+
+@app.post("/auth/users")
+def cadastrar_usuario(body: CadastroRequest, _sessao: dict = Depends(exigir_papel("admin"))):
+    """Menu interno (so admin) para criar novos usuarios do painel, escolhendo
+    o perfil (admin ou atendente) de quem esta sendo cadastrado."""
     try:
         return auth.cadastrar(body.usuario, body.senha, body.nome, body.papel)
     except ValueError as exc:

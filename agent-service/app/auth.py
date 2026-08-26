@@ -80,10 +80,12 @@ def _criar_sessao(usuario: str) -> dict:
 
 
 def cadastrar(usuario: str, senha: str, nome: str, papel: str) -> dict:
-    """Cadastro de usuario novo - quem se cadastra escolhe o proprio perfil
-    (admin ou atendente). Levanta ValueError com uma mensagem apresentavel ao
-    usuario quando algo nao bate (login duplicado, senha curta, perfil
-    invalido etc). Retorna uma sessao ja autenticada (login automatico)."""
+    """Cria um usuario novo - so um admin pode chamar isso (menu interno, ver
+    exigir_papel('admin') em main.py), escolhendo o perfil de quem esta sendo
+    cadastrado. Levanta ValueError com uma mensagem apresentavel na tela quando
+    algo nao bate (login duplicado, senha curta, perfil invalido etc). Retorna
+    os dados publicos do usuario criado - NAO cria sessao (quem cadastrou
+    continua logado como si mesmo, nao "vira" o usuario novo)."""
     usuario_normalizado = (usuario or "").strip().lower()
     nome = (nome or "").strip()
     if not usuario_normalizado or not senha or not nome:
@@ -97,7 +99,15 @@ def cadastrar(usuario: str, senha: str, nome: str, papel: str) -> dict:
 
     _usuarios[usuario_normalizado] = {"papel": papel, "nome": nome, **_hash_senha(senha)}
     _salvar(_usuarios)
-    return _criar_sessao(usuario_normalizado)
+    return {"usuario": usuario_normalizado, "papel": papel, "nome": nome}
+
+
+def listar_usuarios() -> list[dict]:
+    """Lista publica (sem salt/hash) pro menu interno de usuarios do admin."""
+    return [
+        {"usuario": usuario, "papel": dados["papel"], "nome": dados["nome"]}
+        for usuario, dados in sorted(_usuarios.items())
+    ]
 
 
 def autenticar(usuario: str, senha: str) -> dict | None:

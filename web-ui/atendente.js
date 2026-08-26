@@ -10,6 +10,7 @@
   const el = {
     topbarUsuario: document.getElementById("topbar-usuario"),
     linkAdmin: document.getElementById("link-admin"),
+    linkUsuarios: document.getElementById("link-usuarios"),
     btnSair: document.getElementById("btn-sair"),
     conexaoStatus: document.getElementById("conexao-status"),
     convCount: document.getElementById("conv-count"),
@@ -495,7 +496,10 @@
   });
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  if (sessao.papel !== "admin") el.linkAdmin.hidden = true;
+  if (sessao.papel !== "admin") {
+    el.linkAdmin.hidden = true;
+    el.linkUsuarios.hidden = true;
+  }
   el.btnSair.addEventListener("click", () => window.logoutStaff());
 
   poll();

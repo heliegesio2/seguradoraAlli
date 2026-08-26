@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usuários — AutoSeguro</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="login.css" />
+<link rel="stylesheet" href="admin.css" />
+<link rel="stylesheet" href="usuarios.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__title">
+        <span class="topbar__avatar">AS</span>
+        <div>
+          <div class="topbar__name">Usuários</div>
+          <div class="topbar__status">Menu interno — só administradores</div>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <span class="topbar__user" id="topbar-usuario"></span>
+        <a class="btn btn--text" href="atendente.html">Painel do atendente</a>
+        <button class="btn btn--text" id="btn-sair">Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="admin-col">
+
+        <section class="card admin-card">
+          <div class="card__label">Novo usuário</div>
+          <p class="hint">Quem cadastra escolhe o perfil da nova conta.</p>
+          <form id="form-novo-usuario">
+            <label class="login-field" style="margin-top:6px">
+              <span>Nome</span>
+              <input id="input-nome" class="composer__input" type="text" autocomplete="off" required />
+            </label>
+            <label class="login-field">
+              <span>Usuário (login)</span>
+              <input id="input-usuario" class="composer__input" type="text" autocomplete="off" required />
+            </label>
+            <label class="login-field">
+              <span>Senha</span>
+              <div class="admin-password-field">
+                <input id="input-senha" class="composer__input" type="password" autocomplete="off"
+                  minlength="6" required />
+                <button type="button" class="btn btn--icon admin-eye" id="btn-mostrar-senha"
+                  title="Mostrar/ocultar" aria-label="Mostrar ou ocultar senha">👁</button>
+              </div>
+              <span class="hint" style="margin:0">Mínimo de 6 caracteres.</span>
+            </label>
+
+            <div class="login-field">
+              <span>Perfil</span>
+              <div class="admin-options" style="margin:6px 0 0">
+                <label class="admin-option">
+                  <input type="radio" name="papel" value="atendente" checked />
+                  <div>
+                    <strong>Atendente</strong>
+                    <p>Atende conversas encaminhadas para humano, registra soluções e finaliza atendimentos.</p>
+                  </div>
+                </label>
+                <label class="admin-option">
+                  <input type="radio" name="papel" value="admin" />
+                  <div>
+                    <strong>Admin</strong>
+                    <p>Tudo do atendente, mais: aprova base de conhecimento, cadastra usuários e configura o sistema.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <button class="btn btn--filled" type="submit" id="btn-criar-usuario">Criar usuário</button>
+            <p class="login-erro" id="usuario-erro" hidden></p>
+            <p class="usuarios-sucesso" id="usuario-sucesso" hidden></p>
+          </form>
+        </section>
+
+        <section class="card admin-card">
+          <div class="card__label">Usuários cadastrados</div>
+          <div class="usuarios-lista" id="usuarios-lista">carregando…</div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="usuarios.js"></script>
+</body>
+</html>
