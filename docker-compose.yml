@@ -31,6 +31,14 @@ services:
     build: ./agent-service
     ports:
       - "8001:8001"
+    volumes:
+      # usuarios.json/knowledge_base.json/runtime_config.json dizem no proprio
+      # codigo que "sobrevivem a reinicio do container" - sem isso, isso so era
+      # verdade num restart simples; um rebuild (docker compose up --build)
+      # recriava o container do zero e apagava usuarios cadastrados, base de
+      # conhecimento aprovada e configuracoes do Admin (handoff_mode etc) sem
+      # aviso nenhum. O volume fecha essa lacuna.
+      - agent-data:/srv/data
     environment:
       QUOTE_SERVICE_URL: "http://quote-api:8000"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
@@ -63,3 +71,4 @@ services:
 
 volumes:
   mongo-data:
+  agent-data:
