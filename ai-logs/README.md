@@ -7,9 +7,11 @@ direto de `~/.claude/projects/<slug-do-projeto>/*.jsonl`.
 - `e2bab090-fd47-41f8-90b1-5af9c5add745.jsonl` — sessão inicial: instalação do
   Docker/Python/uv na máquina, verificação do ambiente.
 - `c304fd84-41a8-465a-bcef-c52fd2846807.jsonl` — sessão principal: todo o
-  resto do projeto (agente, painel interno, MongoDB, documentação, etc.).
-  **Exportada em 26/ago/2026 — a sessão real continuou depois deste ponto**,
-  então esta cópia não é o histórico 100% completo até a entrega final.
+  resto do projeto (agente, painel interno, MongoDB, documentação, testes
+  automatizados, etc.). **Reexportada em 26/ago/2026** (2ª exportação —
+  a primeira foi feita mais cedo no mesmo dia). Se a sessão real continuar
+  depois deste ponto, esta cópia deixa de ser o histórico 100% completo
+  até a entrega final.
 
 ## Segredos removidos
 
