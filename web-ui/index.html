@@ -15,34 +15,101 @@
       <span class="nav__name">AutoSeguro</span>
     </div>
     <nav class="nav__links">
+      <a href="#planos">Planos</a>
       <a href="#como-funciona">Como funciona</a>
       <a href="#vantagens">Vantagens</a>
+      <a href="#faq">Dúvidas</a>
       <a href="atendente.html" class="nav__staff">Área do atendente</a>
     </nav>
   </header>
 
   <main>
     <section class="hero">
+      <div class="hero__blob hero__blob--1" aria-hidden="true"></div>
+      <div class="hero__blob hero__blob--2" aria-hidden="true"></div>
+
       <div class="hero__copy">
         <p class="hero__eyebrow">Seguro auto, direto ao ponto</p>
         <h1 class="hero__title">Cotação de verdade em minutos, sem sair da página.</h1>
         <p class="hero__subtitle">
           Conte sobre o seu carro pelo chat e receba um valor real, consultado
-          na hora. Se o seu caso precisar de um humano, a gente te leva para o
-          WhatsApp — sem enrolação.
+          na hora. Se o seu caso precisar de um humano, a gente encaminha —
+          sem enrolação.
         </p>
         <div class="hero__actions">
-          <button class="btn btn--filled btn--lg" id="btn-abrir-chat">Iniciar conversa</button>
+          <button class="btn btn--accent btn--lg" id="btn-abrir-chat">Iniciar conversa</button>
           <a class="hero__link" href="#como-funciona">Ver como funciona ↓</a>
         </div>
+        <div class="hero__badges">
+          <span class="pill pill--live"><span class="pill__dot"></span>Online 24h</span>
+          <span class="pill">A partir de <strong>R$ 119,90/mês</strong></span>
+        </div>
       </div>
+
       <div class="hero__art" aria-hidden="true">
         <div class="hero__card">
           <div class="hero__card-row hero__card-row--lead">Quero cotar o seguro do meu Onix 2021</div>
           <div class="hero__card-row hero__card-row--agent">Perfeito! Me conta seu CEP e a data que quer começar a vigência.</div>
           <div class="hero__card-row hero__card-row--quote">R$ 187,40/mês · plano Essencial</div>
         </div>
+        <div class="hero__float-card">
+          <span class="hero__float-icon">✓</span>
+          <div>
+            <strong>Preço sempre real</strong>
+            <div class="hero__float-muted">Nunca estimado por IA</div>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <section class="section" id="planos">
+      <h2 class="section__title">Escolha o plano ideal para você</h2>
+      <p class="section__subtitle">Preço base — o valor final depende da sua idade, do ano do veículo e da região.</p>
+      <div class="plans">
+        <div class="plan-card">
+          <div class="plan-card__name">Essencial</div>
+          <div class="plan-card__price">R$ 119,90<span>/mês</span></div>
+          <div class="plan-card__franquia">Franquia R$ 4.500</div>
+          <ul class="plan-card__list">
+            <li>Colisão</li>
+            <li>Roubo</li>
+            <li>Furto</li>
+          </ul>
+          <button class="btn btn--outline btn-cotar-plano">Cotar esse plano</button>
+        </div>
+
+        <div class="plan-card plan-card--destaque">
+          <div class="plan-card__badge">Mais popular</div>
+          <div class="plan-card__name">Completo</div>
+          <div class="plan-card__price">R$ 209,90<span>/mês</span></div>
+          <div class="plan-card__franquia">Franquia R$ 3.000</div>
+          <ul class="plan-card__list">
+            <li>Colisão</li>
+            <li>Roubo</li>
+            <li>Furto</li>
+            <li>Danos a terceiros</li>
+            <li>Vidros</li>
+          </ul>
+          <button class="btn btn--accent btn-cotar-plano">Cotar esse plano</button>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-card__name">Premium</div>
+          <div class="plan-card__price">R$ 339,90<span>/mês</span></div>
+          <div class="plan-card__franquia">Franquia R$ 1.500</div>
+          <ul class="plan-card__list">
+            <li>Colisão</li>
+            <li>Roubo</li>
+            <li>Furto</li>
+            <li>Danos a terceiros</li>
+            <li>Vidros</li>
+            <li>Carro reserva</li>
+            <li>Assistência 24h</li>
+          </ul>
+          <button class="btn btn--outline btn-cotar-plano">Cotar esse plano</button>
+        </div>
+      </div>
+      <p class="section__footnote">Coberturas de roubo e furto têm carência de 30 dias a partir do início da vigência.</p>
     </section>
 
     <section class="section" id="como-funciona">
@@ -61,33 +128,153 @@
         <div class="step">
           <span class="step__number">3</span>
           <h3>Feche ou fale com um atendente</h3>
-          <p>Pode fechar direto pelo chat. Se preferir negociar ou o caso for especial, encaminhamos para um atendente no WhatsApp.</p>
+          <p>Pode fechar direto pelo chat. Se preferir negociar ou o caso for especial, encaminhamos para um atendente.</p>
         </div>
       </div>
     </section>
 
     <section class="section section--muted" id="vantagens">
       <h2 class="section__title">Por que a AutoSeguro</h2>
-      <div class="cards">
-        <div class="feature-card">
-          <h3>Transparência</h3>
-          <p>Nunca inventamos preço. Se o sistema de cotação está fora do ar, a gente avisa — não chuta um número.</p>
+      <div class="why-grid">
+        <ul class="why-list">
+          <li><span class="why-check">✓</span>Preço sempre real — nunca estimado ou inventado por IA.</li>
+          <li><span class="why-check">✓</span>Se o sistema de cotação instabilizar, tentamos de novo automaticamente.</li>
+          <li><span class="why-check">✓</span>Reclamações, sinistros e pedidos de desconto vão direto para um atendente humano.</li>
+          <li><span class="why-check">✓</span>Aceitamos veículos com até 20 anos de fabricação.</li>
+          <li><span class="why-check">✓</span>Cada atendimento humano vira aprendizado — as próximas conversas resolvem sozinhas.</li>
+        </ul>
+        <div class="why-cards">
+          <div class="why-card">
+            <div class="why-card__icon why-card__icon--a">⚡</div>
+            <div class="why-card__label">Resposta em segundos</div>
+          </div>
+          <div class="why-card">
+            <div class="why-card__icon why-card__icon--b">🔄</div>
+            <div class="why-card__label">Retry automático</div>
+          </div>
+          <div class="why-card">
+            <div class="why-card__icon why-card__icon--c">🛡️</div>
+            <div class="why-card__label">Cotação transparente</div>
+          </div>
+          <div class="why-card">
+            <div class="why-card__icon why-card__icon--d">🧑‍💼</div>
+            <div class="why-card__label">Humano quando precisa</div>
+          </div>
         </div>
-        <div class="feature-card">
-          <h3>Agilidade</h3>
-          <p>Respostas em segundos. Se a cotação falhar por instabilidade, tentamos de novo automaticamente.</p>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="band__blob" aria-hidden="true"></div>
+      <div class="band__content">
+        <p class="band__eyebrow">Simples assim</p>
+        <h2 class="band__title">Do primeiro "oi" à cotação, sem enrolação.</h2>
+        <div class="band__stats">
+          <div class="stat-card">
+            <div class="stat-card__icon stat-card__icon--a">📋</div>
+            <div class="stat-card__value">3 planos</div>
+            <div class="stat-card__label">Essencial, Completo e Premium</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon stat-card__icon--b">🚗</div>
+            <div class="stat-card__value">Até 20 anos</div>
+            <div class="stat-card__label">De fabricação do veículo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon stat-card__icon--c">⏱️</div>
+            <div class="stat-card__value">~5 minutos</div>
+            <div class="stat-card__label">Do início da conversa à cotação</div>
+          </div>
         </div>
-        <div class="feature-card">
-          <h3>Humano quando precisa</h3>
-          <p>Reclamações, sinistros, pedidos de desconto ou casos fora do script vão direto para um atendente de verdade.</p>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <h2 class="section__title">Perguntas frequentes</h2>
+      <div class="faq">
+        <div class="faq-item">
+          <button class="faq-item__question">
+            Como funciona a cotação pelo chat?
+            <span class="faq-item__icon">+</span>
+          </button>
+          <div class="faq-item__answer">
+            <p>Você conversa com o agente, informa plano, idade, ano do veículo, CEP e data de
+              início. Assim que os dados estão completos, consultamos a seguradora em tempo real
+              e mostramos o valor exato — nunca um número estimado.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__question">
+            O que acontece se o sistema de cotação ficar instável?
+            <span class="faq-item__icon">+</span>
+          </button>
+          <div class="faq-item__answer">
+            <p>Tentamos novamente de forma automática (com espera crescente entre as tentativas).
+              Se continuar indisponível, avisamos com transparência em vez de inventar um preço.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__question">
+            Posso falar com um atendente humano?
+            <span class="faq-item__icon">+</span>
+          </button>
+          <div class="faq-item__answer">
+            <p>Sim. Pedidos explícitos, reclamações, sinistros e negociação de desconto são
+              encaminhados para um atendente. Antes de encaminhar, perguntamos seu nome e o que
+              você precisa — se já tivermos a resposta certa, resolvemos ali mesmo.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__question">
+            Como funciona a carência do seguro contra roubo e furto?
+            <span class="faq-item__icon">+</span>
+          </button>
+          <div class="faq-item__answer">
+            <p>As coberturas de roubo e furto só passam a valer 30 dias após o início da
+              vigência. As demais coberturas contratadas valem desde o primeiro dia.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__question">
+            Quais veículos vocês aceitam?
+            <span class="faq-item__icon">+</span>
+          </button>
+          <div class="faq-item__answer">
+            <p>Aceitamos veículos com até 20 anos de fabricação. O valor considera a idade do
+              condutor, o ano do veículo e a região do CEP informado.</p>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div>AutoSeguro Corretora de Seguros Ltda. — CNPJ 00.000.000/0001-00</div>
-    <div class="footer__muted">Atendimento de segunda a sexta, 8h às 20h.</div>
+    <div class="footer__top">
+      <div class="footer__brand">
+        <span class="nav__logo">AS</span>
+        <span class="nav__name" style="color:inherit">AutoSeguro</span>
+      </div>
+
+      <div class="footer__col">
+        <div class="footer__col-title">Canais de atendimento</div>
+        <a href="#" id="footer-abrir-chat">Chat pelo site</a>
+        <div class="footer__muted">Atendimento humano quando você precisar</div>
+      </div>
+
+      <div class="footer__col">
+        <div class="footer__col-title">Horários</div>
+        <div class="footer__muted">Chat: 24h, todos os dias</div>
+        <div class="footer__muted">Atendente humano: seg. a sex., 8h às 20h</div>
+      </div>
+
+      <div class="footer__col">
+        <div class="footer__col-title">Links úteis</div>
+        <a href="#planos">Planos</a>
+        <a href="#faq">Perguntas frequentes</a>
+        <a href="atendente.html">Área do atendente</a>
+      </div>
+    </div>
+    <div class="footer__bottom">AutoSeguro Corretora de Seguros Ltda.</div>
   </footer>
 
   <!-- Widget de chat flutuante -->
@@ -138,5 +325,6 @@
   <script src="config.js"></script>
   <script src="speech.js"></script>
   <script src="widget.js"></script>
+  <script src="landing.js"></script>
 </body>
 </html>

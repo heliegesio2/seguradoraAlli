@@ -1,49 +1,59 @@
-/* Material Design 3 - paleta neutra com accent verde (tema "AutoSeguro").
+/* Paleta "insurtech" - indigo/violeta vibrante com accent rosa e verde de
+   contraste para CTAs (referencia visual: concorrentes digitais do setor).
    Tokens definidos como custom properties, com variante dark via prefers-color-scheme. */
 :root {
-  --md-primary: #146c43;
+  --md-primary: #5b4ff0;
   --md-on-primary: #ffffff;
-  --md-primary-container: #b6f2c9;
-  --md-on-primary-container: #00210d;
+  --md-primary-container: #e7e4ff;
+  --md-on-primary-container: #241a6b;
 
-  --md-surface: #fbfdf8;
-  --md-on-surface: #191c1a;
-  --md-surface-variant: #dde5db;
-  --md-on-surface-variant: #414942;
+  --md-accent-pink: #e63888;
+  --md-accent-green: #22c55e;
+  --md-on-accent-green: #ffffff;
 
-  --md-background: #f2f5ef;
-  --md-outline: #71796f;
+  --md-surface: #ffffff;
+  --md-on-surface: #17152b;
+  --md-surface-variant: #eceafc;
+  --md-on-surface-variant: #524d6b;
+
+  --md-background: #f5f5fb;
+  --md-outline: #a9a4c9;
+
+  --md-navy: #14142b;
+  --md-on-navy: #f0f0fa;
+  --md-navy-variant: #2a2850;
 
   --md-lead-bubble: #d9fdd3;
   --md-agent-bubble: #ffffff;
 
-  --md-elevation-1: 0 1px 2px rgba(0,0,0,0.20), 0 1px 3px 1px rgba(0,0,0,0.10);
-  --md-elevation-2: 0 1px 2px rgba(0,0,0,0.24), 0 2px 6px 2px rgba(0,0,0,0.12);
+  --md-elevation-1: 0 1px 2px rgba(23,17,64,0.10), 0 1px 3px 1px rgba(23,17,64,0.08);
+  --md-elevation-2: 0 2px 6px rgba(23,17,64,0.14), 0 4px 14px rgba(23,17,64,0.10);
 
   --md-radius-s: 8px;
   --md-radius-m: 16px;
   --md-radius-l: 24px;
+  --md-radius-xl: 32px;
 
   --md-font: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --md-primary: #8bd5a4;
-    --md-on-primary: #00391a;
-    --md-primary-container: #005229;
-    --md-on-primary-container: #b6f2c9;
+    --md-primary: #b3aeff;
+    --md-on-primary: #221a68;
+    --md-primary-container: #3a3186;
+    --md-on-primary-container: #e7e4ff;
 
-    --md-surface: #101411;
-    --md-on-surface: #e1e3de;
-    --md-surface-variant: #414942;
-    --md-on-surface-variant: #c0c9bd;
+    --md-surface: #1b1933;
+    --md-on-surface: #eae8f7;
+    --md-surface-variant: #322e54;
+    --md-on-surface-variant: #c8c3e6;
 
-    --md-background: #0b0f0c;
-    --md-outline: #8b938a;
+    --md-background: #121026;
+    --md-outline: #6d6796;
 
-    --md-lead-bubble: #005229;
-    --md-agent-bubble: #1b1f1c;
+    --md-lead-bubble: #1f4f33;
+    --md-agent-bubble: #262244;
   }
 }
 
@@ -111,6 +121,10 @@ html, body {
   width: 100%; margin-top: 8px;
 }
 .btn--filled:hover { filter: brightness(1.08); }
+.btn--accent {
+  background: var(--md-accent-green); color: var(--md-on-accent-green);
+}
+.btn--accent:hover { filter: brightness(1.06); }
 
 /* Layout */
 .content {
@@ -310,5 +324,5 @@ html, body {
 
 /* Status chip colors reflect conversation state */
 .status--handoff { color: #ffdad6 !important; }
-.status--fechado { color: #b6f2c9 !important; }
+.status--fechado { color: #bbf7d0 !important; }
 .status--perdido, .status--perdido_recusa { color: #f5d0d0 !important; }

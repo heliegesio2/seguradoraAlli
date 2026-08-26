@@ -78,7 +78,7 @@
     canvas.height = size;
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle = "#146c43";
+    ctx.fillStyle = "#5b4ff0";
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
     ctx.fill();
