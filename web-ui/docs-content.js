@@ -272,6 +272,35 @@ window.DOCS = {
             },
           ],
         },
+        {
+          id: "estrutura-de-arquivos",
+          titulo: "Estrutura de pastas e arquivos",
+          atualizado: "26 de ago de 2026",
+          aviso:
+            "Árvore curada à mão a partir do repositório real (ver web-ui/docs-arvore.js) — se " +
+            "arquivos forem adicionados/removidos depois, pode ficar desatualizada.",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Clique numa pasta para abrir/fechar. Em cada <strong>arquivo</strong>, passe o mouse e " +
+                "clique no ícone <strong>📋</strong> para copiar um prompt pronto sobre aquele arquivo — " +
+                "cole numa IA (Claude, ChatGPT etc.) junto com o conteúdo do arquivo para pedir uma " +
+                "explicação com contexto do projeto.",
+            },
+            { tipo: "arvore", dados: window.ARVORE_PROJETO },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>web-ui/docs-arvore.js</code> — fonte de dados desta árvore (nome, caminho e " +
+                  "descrição de cada arquivo).",
+                "Artigo <strong>Tecnologias utilizadas</strong> — o que cada tecnologia faz, agrupado " +
+                  "por área em vez de por arquivo.",
+              ],
+            },
+          ],
+        },
       ],
     },
     {

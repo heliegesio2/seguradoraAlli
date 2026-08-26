@@ -237,3 +237,66 @@
   .docs-sidebar { width: 220px; }
   .docs-conteudo { padding: 24px 20px 60px; }
 }
+
+/* Arvore de pastas/arquivos do projeto (bloco tipo "arvore" em docs-content.js) */
+.docs-arvore-fs {
+  max-width: 760px;
+  border: 1px solid var(--md-surface-variant);
+  border-radius: var(--md-radius-m);
+  padding: 10px 8px;
+  margin-bottom: 22px;
+  font-size: 13px;
+}
+.docs-arvore-fs__controles {
+  display: flex;
+  gap: 16px;
+  padding: 2px 8px 10px;
+  border-bottom: 1px solid var(--md-surface-variant);
+  margin-bottom: 6px;
+}
+.docs-arvore-fs__linha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+}
+.docs-arvore-fs__pasta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: var(--md-on-surface);
+  padding: 4px 6px;
+  border-radius: var(--md-radius-s);
+}
+.docs-arvore-fs__pasta:hover { background: var(--md-background); }
+.docs-arvore-fs__chevron {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--md-on-surface-variant);
+  transition: transform 120ms ease;
+}
+.docs-arvore-fs__pasta--aberta .docs-arvore-fs__chevron { transform: rotate(90deg); }
+.docs-arvore-fs__icone { font-size: 13px; }
+.docs-arvore-fs__nome { word-break: break-word; }
+.docs-arvore-fs__linha:has(.docs-arvore-fs__copiar) { padding: 4px 6px; }
+.docs-arvore-fs__linha:has(.docs-arvore-fs__copiar):hover { background: var(--md-background); border-radius: var(--md-radius-s); }
+.docs-arvore-fs__copiar {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+.docs-arvore-fs__linha:hover .docs-arvore-fs__copiar { opacity: 1; }
+.docs-arvore-fs__copiar:hover { background: var(--md-surface-variant); }

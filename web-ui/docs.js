@@ -98,9 +98,119 @@
         return `<ul>${bloco.itens.map((i) => `<li>${i}</li>`).join("")}</ul>`;
       case "codigo":
         return `<pre class="docs-code"><code>${escapeHtml(bloco.codigo)}</code></pre>`;
+      case "arvore":
+        // Preenchido depois via montarArvoreArquivos() - construir a arvore
+        // interativa como string HTML seria inviavel (precisa de listener por
+        // botao). So suporta um bloco "arvore" por artigo por enquanto.
+        return `<div class="docs-arvore-fs" id="docs-arvore-arquivos"></div>`;
       default:
         return "";
     }
+  }
+
+  // --- arvore de pastas/arquivos do projeto (bloco tipo "arvore") ----------
+
+  function montarPromptArquivo(no) {
+    return (
+      "Você é uma IA ajudando a entender um projeto chamado AutoSeguro (agente de vendas " +
+      "de seguro auto por WhatsApp; backend em Python/FastAPI, frontend em HTML/CSS/JS puro).\n\n" +
+      `Arquivo: ${no.caminho}\n` +
+      `Papel deste arquivo no projeto: ${no.descricao}\n\n` +
+      "Vou colar o conteúdo do arquivo abaixo. Por favor explique: (1) o que ele faz, " +
+      "(2) suas principais responsabilidades/funções, e (3) como ele se conecta com o resto do sistema.\n\n" +
+      `--- conteúdo do arquivo (${no.caminho}) ---\n` +
+      "[cole aqui o conteúdo do arquivo]"
+    );
+  }
+
+  function criarNoArvoreFs(no, nivel) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "docs-arvore-fs__no";
+
+    const linha = document.createElement("div");
+    linha.className = "docs-arvore-fs__linha";
+    linha.style.paddingLeft = `${nivel * 16}px`;
+    wrapper.appendChild(linha);
+
+    if (no.tipo === "pasta") {
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "docs-arvore-fs__pasta";
+      botao.innerHTML =
+        '<span class="docs-arvore-fs__chevron">▸</span>' +
+        '<span class="docs-arvore-fs__icone">📁</span>' +
+        `<span class="docs-arvore-fs__nome">${escapeHtml(no.nome)}</span>`;
+      linha.appendChild(botao);
+
+      const filhos = document.createElement("div");
+      filhos.className = "docs-arvore-fs__filhos";
+      (no.filhos || []).forEach((filho) => filhos.appendChild(criarNoArvoreFs(filho, nivel + 1)));
+      wrapper.appendChild(filhos);
+
+      if (nivel === 0) {
+        botao.classList.add("docs-arvore-fs__pasta--aberta");
+      } else {
+        filhos.hidden = true;
+      }
+      botao.addEventListener("click", () => {
+        filhos.hidden = !filhos.hidden;
+        botao.classList.toggle("docs-arvore-fs__pasta--aberta", !filhos.hidden);
+      });
+    } else {
+      linha.innerHTML =
+        '<span class="docs-arvore-fs__icone">📄</span>' +
+        `<span class="docs-arvore-fs__nome" title="${escapeHtml(no.descricao || "")}">${escapeHtml(no.nome)}</span>` +
+        '<button type="button" class="docs-arvore-fs__copiar" title="Copiar prompt sobre este arquivo" aria-label="Copiar prompt sobre este arquivo">📋</button>';
+      const botaoCopiar = linha.querySelector(".docs-arvore-fs__copiar");
+      botaoCopiar.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(montarPromptArquivo(no));
+          avisoTemporario(botaoCopiar, "✅");
+        } catch {
+          avisoTemporario(botaoCopiar, "⚠️");
+        }
+      });
+    }
+    return wrapper;
+  }
+
+  function montarArvoreArquivos(containerId, raiz) {
+    const container = document.getElementById(containerId);
+    if (!container || !raiz) return;
+    container.innerHTML = "";
+
+    const controles = document.createElement("div");
+    controles.className = "docs-arvore-fs__controles";
+    const btnExpandir = document.createElement("button");
+    btnExpandir.type = "button";
+    btnExpandir.className = "docs-util-btn";
+    btnExpandir.textContent = "Expandir tudo";
+    const btnRecolher = document.createElement("button");
+    btnRecolher.type = "button";
+    btnRecolher.className = "docs-util-btn";
+    btnRecolher.textContent = "Recolher tudo";
+    controles.appendChild(btnExpandir);
+    controles.appendChild(btnRecolher);
+    container.appendChild(controles);
+    container.appendChild(criarNoArvoreFs(raiz, 0));
+
+    btnExpandir.addEventListener("click", () => {
+      container.querySelectorAll(".docs-arvore-fs__filhos").forEach((f) => { f.hidden = false; });
+      container.querySelectorAll(".docs-arvore-fs__pasta").forEach((b) => b.classList.add("docs-arvore-fs__pasta--aberta"));
+    });
+    btnRecolher.addEventListener("click", () => {
+      container.querySelectorAll(".docs-arvore-fs__filhos").forEach((f) => { f.hidden = true; });
+      container.querySelectorAll(".docs-arvore-fs__pasta").forEach((b) => b.classList.remove("docs-arvore-fs__pasta--aberta"));
+    });
+  }
+
+  function arvoreParaTexto(no, prefixo) {
+    if (no.tipo === "arquivo") return `${prefixo}- ${no.caminho}\n`;
+    let saida = `${prefixo}- ${no.nome}/\n`;
+    (no.filhos || []).forEach((filho) => {
+      saida += arvoreParaTexto(filho, prefixo + "  ");
+    });
+    return saida;
   }
 
   function paraMarkdown(art) {
@@ -114,6 +224,8 @@
         linhas.push("");
       } else if (b.tipo === "codigo") {
         linhas.push("```" + (b.linguagem || ""), b.codigo, "```", "");
+      } else if (b.tipo === "arvore") {
+        linhas.push("```", arvoreParaTexto(b.dados, "").trimEnd(), "```", "");
       }
     });
     return linhas.join("\n");
@@ -171,6 +283,8 @@
           <button class="docs-feedback__btn" data-valor="nao" title="Não" aria-label="Não">👎</button>
           <span class="docs-feedback__msg" id="docs-feedback-msg"></span>
         </div>`;
+      const blocoArvore = art.blocos.find((b) => b.tipo === "arvore");
+      if (blocoArvore) montarArvoreArquivos("docs-arvore-arquivos", blocoArvore.dados);
       renderToc();
     }
 
