@@ -47,6 +47,13 @@ class LoginRequest(BaseModel):
     senha: str
 
 
+class CadastroRequest(BaseModel):
+    usuario: str
+    senha: str
+    nome: str
+    papel: str
+
+
 class RecaptchaVerifyRequest(BaseModel):
     token: str
 
@@ -98,6 +105,17 @@ def _assumir_se_necessario(conv, sessao: dict) -> None:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.post("/auth/register")
+def cadastrar(body: CadastroRequest):
+    """Auto-cadastro do painel interno - a propria pessoa escolhe o perfil
+    (admin ou atendente) no formulario. Retorna ja logado (mesma forma de
+    /auth/login), pra nao precisar de uma segunda tela so pra entrar."""
+    try:
+        return auth.cadastrar(body.usuario, body.senha, body.nome, body.papel)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/auth/login")

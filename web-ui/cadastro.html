@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cadastro — AutoSeguro</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="login.css" />
+<link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="login-page">
+    <form class="login-card" id="cadastro-form">
+      <div class="login-card__brand">
+        <span class="nav__logo">AS</span>
+        <span class="nav__name">AutoSeguro</span>
+      </div>
+      <h1 class="login-card__title">Criar conta</h1>
+      <p class="hint">Área interna (atendente e Admin). Escolha seu perfil ao se cadastrar.</p>
+
+      <label class="login-field">
+        <span>Nome</span>
+        <input id="input-nome" class="composer__input" type="text" autocomplete="off" required />
+      </label>
+      <label class="login-field">
+        <span>Usuário (login)</span>
+        <input id="input-usuario" class="composer__input" type="text" autocomplete="off" required />
+      </label>
+      <label class="login-field">
+        <span>Senha</span>
+        <div class="admin-password-field">
+          <input id="input-senha" class="composer__input" type="password" autocomplete="off"
+            minlength="6" required />
+          <button type="button" class="btn btn--icon admin-eye" id="btn-mostrar-senha"
+            title="Mostrar/ocultar" aria-label="Mostrar ou ocultar senha">👁</button>
+        </div>
+        <span class="hint" style="margin:0">Mínimo de 6 caracteres.</span>
+      </label>
+
+      <div class="login-field">
+        <span>Perfil</span>
+        <div class="admin-options" style="margin:6px 0 0">
+          <label class="admin-option">
+            <input type="radio" name="papel" value="atendente" checked />
+            <div>
+              <strong>Atendente</strong>
+              <p>Atende conversas encaminhadas para humano, registra soluções e finaliza atendimentos.</p>
+            </div>
+          </label>
+          <label class="admin-option">
+            <input type="radio" name="papel" value="admin" />
+            <div>
+              <strong>Admin</strong>
+              <p>Tudo do atendente, mais: aprova base de conhecimento e configura o sistema.</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn--filled" type="submit" id="btn-cadastrar">Criar conta</button>
+      <p class="login-erro" id="cadastro-erro" hidden></p>
+
+      <p class="login-card__home"><a href="login.html">Já tenho conta — entrar</a></p>
+      <p class="login-card__home"><a href="index.html">← Voltar para o site</a></p>
+    </form>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="cadastro.js"></script>
+</body>
+</html>
