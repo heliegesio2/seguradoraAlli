@@ -178,6 +178,119 @@ window.DOCS = {
           ],
         },
         {
+          id: "testes-automatizados",
+          titulo: "Testes automatizados",
+          atualizado: "26 de ago de 2026",
+          aviso:
+            "Roda sem Docker, sem ANTHROPIC_API_KEY e sem MongoDB — toda dependência externa é " +
+            "substituída por dublê (monkeypatch). Se um teste aqui falhar, é sinal de bug de verdade, " +
+            "não de ambiente mal configurado.",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "51 testes com <strong>pytest</strong> em <code>agent-service/tests/</code>, cobrindo " +
+                "exatamente os pontos que o desafio mais cobra: o critério de handoff, a distinção " +
+                "infra-vs-negócio no retry da cotação, a garantia de que o preço nunca é escrito pelo " +
+                "LLM, o loop de aprovação da base de conhecimento, hash de senha e os filtros dos relatórios.",
+            },
+            { tipo: "h2", id: "rodando-os-testes", titulo: "Rodando os testes" },
+            {
+              tipo: "codigo",
+              linguagem: "bash",
+              codigo: "cd agent-service\nuv run --group dev pytest",
+            },
+            {
+              tipo: "p",
+              html:
+                "Isso instala o <code>pytest</code> (grupo de dependências <code>dev</code>, separado das " +
+                "dependências de produção em <code>pyproject.toml</code>) e roda a suite inteira. Saída " +
+                "esperada: <code>51 passed</code>.",
+            },
+            { tipo: "h2", id: "rodando-so-uma-parte", titulo: "Rodando só um arquivo ou um teste específico" },
+            {
+              tipo: "codigo",
+              linguagem: "bash",
+              codigo:
+                "# so um arquivo\n" +
+                "uv run --group dev pytest tests/test_orchestrator.py\n\n" +
+                "# so os testes cujo nome bate com \"handoff\"\n" +
+                "uv run --group dev pytest -k handoff\n\n" +
+                "# saida detalhada, um teste por linha\n" +
+                "uv run --group dev pytest -v",
+            },
+            { tipo: "h2", id: "o-que-cada-arquivo-cobre", titulo: "O que cada arquivo cobre" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>test_orchestrator.py</code> (19 testes) — o coração: <code>_motivo_handoff</code> " +
+                  "(as 4 condições de handoff + o caso sem sinal nenhum), <code>_validar_slots</code>, " +
+                  "e o teste mais importante do projeto — prova que <code>_apresentar_cotacao</code> " +
+                  "nunca chama o LLM e que o preço vem sempre do JSON do <code>quote-service</code>. " +
+                  "Também cobre <code>handle_message</code> ponta a ponta (Claude e cotação mockados): " +
+                  "caminho feliz, pedido explícito de atendente e 3 falhas de compreensão seguidas.",
+                "<code>test_quote_client.py</code> (6 testes) — sucesso nunca repete, recusa de negócio " +
+                  "(422) nunca repete, payload inválido (400) nunca repete, erro de infra (5xx/timeout) " +
+                  "esgota as tentativas com backoff, e recupera se uma tentativa posterior tiver sucesso.",
+                "<code>test_knowledge_base.py</code> (7 testes) — resolução pendente não é encontrada em " +
+                  "busca, só depois de aprovada; casos abaixo do score mínimo de similaridade ficam de " +
+                  "fora; reprovar remove a entrada de vez.",
+                "<code>test_auth.py</code> (9 testes) — senha nunca fica em texto puro, login " +
+                  "certo/errado/inexistente, cadastro duplicado é rejeitado, cadastro não cria sessão " +
+                  "sozinho, logout invalida o token.",
+                "<code>test_relatorios.py</code> (7 testes) — filtro por período/nota/atendente, " +
+                  "conversas sem atendente ficam de fora, ranking de volume e de nota calculados certos.",
+                "<code>test_models.py</code> (3 testes) — <code>Conversation.missing_slots()</code> " +
+                  "identifica corretamente o que falta coletar.",
+              ],
+            },
+            { tipo: "h2", id: "como-funciona-sem-chave-nem-docker", titulo: "Como funciona sem chave nem Docker" },
+            {
+              tipo: "p",
+              html:
+                "Cada teste substitui, via <code>monkeypatch</code>, exatamente o ponto de contato com o " +
+                "mundo externo — nunca a lógica sendo testada:",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>orchestrator.llm.extrair</code> / <code>orchestrator.llm.gerar_resposta</code> — " +
+                  "troca o Claude de verdade por uma função que devolve dados/texto fixos.",
+                "<code>orchestrator.cotar_com_retry</code> / <code>quote_client.httpx.post</code> — troca " +
+                  "a chamada HTTP ao <code>quote-service</code> por uma resposta fabricada (sucesso, " +
+                  "422, 5xx, timeout).",
+                "<code>auth._salvar</code> e <code>kb._KB_PATH</code> — troca a escrita em disco por " +
+                  "um no-op ou por um arquivo temporário isolado, então nenhum teste toca " +
+                  "<code>agent-service/data/*.json</code> de verdade.",
+                "O Mongo nunca entra em cena nos testes — só <code>orchestrator.log_event</code> é " +
+                  "silenciado (ele tenta gravar em <code>logs/events.jsonl</code> e no Mongo, o que não " +
+                  "é o que está sendo testado aqui).",
+              ],
+            },
+            { tipo: "h2", id: "adicionando-um-teste-novo", titulo: "Adicionando um teste novo" },
+            {
+              tipo: "p",
+              html:
+                "Siga o mesmo padrão: nunca deixe um teste depender de rede, do disco real ou de uma " +
+                "chave de API. Se a função que você quer testar chama algo externo, dê um " +
+                "<code>monkeypatch</code> nesse ponto exato (não mais que isso) antes de chamar a função " +
+                "e checar o resultado. Os arquivos existentes em <code>agent-service/tests/</code> têm um " +
+                "exemplo de cada padrão — copie a fixture <code>autouse</code> mais parecida com o que " +
+                "você está testando.",
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>README.md</code>, seção \"Rodando os testes\".",
+                "<code>execucao-projeto.md</code>, seção \"Testes automatizados\".",
+                "Artigo <strong>De onde vêm as perguntas? E onde são gravadas as respostas?</strong> — " +
+                  "para entender <code>orchestrator.py</code>, a peça mais coberta pelos testes.",
+              ],
+            },
+          ],
+        },
+        {
           id: "tecnologias",
           titulo: "Tecnologias utilizadas",
           atualizado: "26 de ago de 2026",
