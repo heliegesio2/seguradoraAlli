@@ -132,20 +132,13 @@ html, body {
 }
 .btn--fab:hover { box-shadow: var(--md-elevation-2); }
 
-/* Avatar (foto do usuario ou iniciais) - usado na lista de Usuarios, nos
-   rankings de Relatorios e em Meus dados. */
+/* Avatar (foto do usuario, ou img/userdefault.jpg se nao tiver) - usado na
+   lista de Usuarios, nos rankings de Relatorios, na topbar e em Meus dados. */
 .avatar {
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.avatar--fallback {
-  background: var(--md-primary-container);
-  color: var(--md-on-primary-container);
-  font-weight: 700;
+  background: var(--md-surface-variant);
 }
 
 /* Bolinha da topbar com a foto de quem esta logado - leva para Meus dados. */

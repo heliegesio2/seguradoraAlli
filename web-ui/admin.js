@@ -7,7 +7,6 @@
   const el = {
     status: document.getElementById("admin-status"),
     topbarUsuario: document.getElementById("topbar-usuario"),
-    btnSair: document.getElementById("btn-sair"),
     numero: document.getElementById("input-whatsapp-numero"),
     anthropicKey: document.getElementById("input-anthropic-key"),
     whatsappToken: document.getElementById("input-whatsapp-token"),
@@ -105,7 +104,6 @@
 
   el.btnSalvar.addEventListener("click", salvar);
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
   carregar().catch((err) => {
     el.status.textContent = "erro ao carregar configuração";
     console.error(err);

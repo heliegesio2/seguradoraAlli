@@ -6,7 +6,6 @@
 
   const el = {
     topbarUsuario: document.getElementById("topbar-usuario"),
-    btnSair: document.getElementById("btn-sair"),
     filtroInicio: document.getElementById("filtro-inicio"),
     filtroFim: document.getElementById("filtro-fim"),
     filtroNotaMin: document.getElementById("filtro-nota-min"),
@@ -22,7 +21,6 @@
   };
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
 
   function escapeHtml(str) {
     const div = document.createElement("div");

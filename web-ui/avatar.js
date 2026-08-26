@@ -1,14 +1,13 @@
-// Helper compartilhado pra desenhar o "bolinha com foto" (ou iniciais, se a
-// pessoa nao tiver foto) - usado na lista de usuarios, nos rankings de
-// relatorios e na pre-visualizacao em "Meus dados".
+// Helper compartilhado pra desenhar o "bolinha com foto" (ou a foto padrao
+// generica, se a pessoa nao tiver foto propria) - usado na lista de
+// usuarios, nos rankings de relatorios, na topbar e na pre-visualizacao em
+// "Meus dados".
+window.FOTO_PADRAO = "img/userdefault.jpg";
+
 window.avatarHtml = function avatarHtml(nome, foto, tamanho = 32) {
-  const estilo = `width:${tamanho}px;height:${tamanho}px;font-size:${Math.round(tamanho * 0.42)}px`;
-  if (foto) {
-    const nomeEscapado = (nome || "").replace(/"/g, "&quot;");
-    return `<img class="avatar" style="${estilo}" src="${foto}" alt="${nomeEscapado}" />`;
-  }
-  const inicial = (nome || "?").trim().charAt(0).toUpperCase() || "?";
-  return `<span class="avatar avatar--fallback" style="${estilo}">${inicial}</span>`;
+  const estilo = `width:${tamanho}px;height:${tamanho}px`;
+  const nomeEscapado = (nome || "Usuário").replace(/"/g, "&quot;");
+  return `<img class="avatar" style="${estilo}" src="${foto || window.FOTO_PADRAO}" alt="${nomeEscapado}" />`;
 };
 
 // Bolinha clicavel na topbar com a foto do usuario logado - leva direto para

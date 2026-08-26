@@ -6,7 +6,6 @@
 
   const el = {
     topbarUsuario: document.getElementById("topbar-usuario"),
-    btnSair: document.getElementById("btn-sair"),
     filtro: document.getElementById("docs-filtro"),
     arvore: document.getElementById("docs-arvore"),
     conteudo: document.getElementById("docs-conteudo"),
@@ -14,7 +13,6 @@
   };
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
 
   let modoMarkdown = false;
   let observadorScroll = null;

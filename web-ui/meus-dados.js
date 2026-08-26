@@ -7,7 +7,6 @@
   const el = {
     status: document.getElementById("meus-dados-status"),
     topbarUsuario: document.getElementById("topbar-usuario"),
-    btnSair: document.getElementById("btn-sair"),
     fotoAtual: document.getElementById("foto-atual"),
     inputFoto: document.getElementById("input-foto"),
     btnSalvar: document.getElementById("btn-salvar-foto"),
@@ -20,7 +19,6 @@
 
   el.status.textContent = `${sessao.nome} (${sessao.papel})`;
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
 
   function renderFotoAtual() {
     const foto = fotoSelecionada === undefined ? sessao.foto : fotoSelecionada;

@@ -6,7 +6,6 @@
 
   const el = {
     topbarUsuario: document.getElementById("topbar-usuario"),
-    btnSair: document.getElementById("btn-sair"),
     form: document.getElementById("form-novo-usuario"),
     nome: document.getElementById("input-nome"),
     usuario: document.getElementById("input-usuario"),
@@ -23,7 +22,6 @@
   let fotoSelecionada = null;
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
-  el.btnSair.addEventListener("click", () => window.logoutStaff());
   window.attachPasswordToggle(el.btnMostrarSenha, el.senha);
   el.fotoPreview.innerHTML = window.avatarHtml("", null, 48);
 
