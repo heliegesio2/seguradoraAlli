@@ -1,11 +1,12 @@
 /* Menu interno "Usuarios" (admin only): form de cadastro + lista. */
 
-.usuarios-sucesso {
-  color: #146c43;
-  font-size: 13px;
-  margin: 10px 0 0;
+.usuarios-foto-campo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
 }
-.usuarios-sucesso[hidden] { display: none; }
+.usuarios-foto-campo input[type="file"] { font-size: 12.5px; }
 
 .usuarios-lista {
   display: flex;
@@ -24,6 +25,7 @@
   border-radius: var(--md-radius-s);
   background: var(--md-background);
 }
+.usuarios-linha__principal { display: flex; align-items: center; gap: 10px; }
 .usuarios-linha__nome { font-weight: 700; font-size: 13.5px; color: var(--md-on-surface); }
 .usuarios-linha__login { font-size: 12px; color: var(--md-on-surface-variant); }
 

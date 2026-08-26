@@ -52,6 +52,11 @@ class CadastroRequest(BaseModel):
     senha: str
     nome: str
     papel: str
+    foto: str | None = None
+
+
+class FotoRequest(BaseModel):
+    foto: str | None = None
 
 
 class RecaptchaVerifyRequest(BaseModel):
@@ -117,7 +122,18 @@ def cadastrar_usuario(body: CadastroRequest, _sessao: dict = Depends(exigir_pape
     """Menu interno (so admin) para criar novos usuarios do painel, escolhendo
     o perfil (admin ou atendente) de quem esta sendo cadastrado."""
     try:
-        return auth.cadastrar(body.usuario, body.senha, body.nome, body.papel)
+        return auth.cadastrar(body.usuario, body.senha, body.nome, body.papel, body.foto)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/auth/me/foto")
+def atualizar_minha_foto(body: FotoRequest, sessao: dict = Depends(exigir_papel())):
+    """Auto-atendimento: qualquer usuario logado (admin ou atendente) troca a
+    PROPRIA foto - menu 'Meus dados'. exigir_papel() sem argumentos so exige
+    login valido, sem restringir por perfil."""
+    try:
+        return auth.atualizar_foto(sessao["usuario"], body.foto)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -280,8 +296,23 @@ def enviar_mensagem_atendente(
 
 
 @app.get("/reports/summary")
-def relatorio_resumo(_sessao: dict = Depends(exigir_papel("atendente", "admin"))):
-    return relatorios.gerar_resumo(store.list_conversations())
+def relatorio_resumo(
+    data_inicio: str | None = None,
+    data_fim: str | None = None,
+    nota_min: int | None = None,
+    nota_max: int | None = None,
+    atendente: str | None = None,
+    _sessao: dict = Depends(exigir_papel("atendente", "admin")),
+):
+    resumo = relatorios.gerar_resumo(
+        store.list_conversations(),
+        data_inicio=data_inicio, data_fim=data_fim,
+        nota_min=nota_min, nota_max=nota_max, atendente=atendente,
+    )
+    foto_por_nome = {u["nome"]: u.get("foto") for u in auth.listar_usuarios()}
+    for entrada in resumo["ranking_volume"] + resumo["ranking_notas"]:
+        entrada["foto"] = foto_por_nome.get(entrada["atendente"])
+    return resumo
 
 
 @app.get("/knowledge-base")

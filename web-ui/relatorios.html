@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Relatórios — AutoSeguro</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="admin.css" />
+<link rel="stylesheet" href="relatorios.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__title">
+        <span class="topbar__avatar">AS</span>
+        <div>
+          <div class="topbar__name">Relatórios</div>
+          <div class="topbar__status">Atendimentos humanos ao longo do tempo</div>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <span class="topbar__user" id="topbar-usuario"></span>
+        <a class="btn btn--text" href="atendente.html">Painel do atendente</a>
+        <button class="btn btn--text" id="btn-sair">Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="admin-col rel-col">
+
+        <section class="card admin-card">
+          <div class="card__label">Filtros</div>
+          <div class="rel-filtros">
+            <label class="rel-filtro">
+              <span>Período (início)</span>
+              <input type="date" id="filtro-inicio" class="composer__input" />
+            </label>
+            <label class="rel-filtro">
+              <span>Período (fim)</span>
+              <input type="date" id="filtro-fim" class="composer__input" />
+            </label>
+            <label class="rel-filtro">
+              <span>Nota mínima</span>
+              <input type="number" id="filtro-nota-min" class="composer__input" min="1" max="10" placeholder="1" />
+            </label>
+            <label class="rel-filtro">
+              <span>Nota máxima</span>
+              <input type="number" id="filtro-nota-max" class="composer__input" min="1" max="10" placeholder="10" />
+            </label>
+            <label class="rel-filtro rel-filtro--largo">
+              <span>Atendente</span>
+              <input type="text" id="filtro-atendente" class="composer__input" placeholder="Nome (parcial)" autocomplete="off" />
+            </label>
+          </div>
+          <div class="rel-filtros-botoes">
+            <button class="btn btn--filled" id="btn-aplicar-filtros" style="width:auto">Aplicar filtros</button>
+            <button class="btn btn--outline" id="btn-limpar-filtros" style="width:auto">Limpar</button>
+          </div>
+        </section>
+
+        <div class="rel-resumo">
+          <div class="card admin-card rel-resumo__card">
+            <div class="card__label">Atendimentos hoje</div>
+            <div class="card__value rel-resumo__valor" id="rel-hoje">—</div>
+          </div>
+          <div class="card admin-card rel-resumo__card">
+            <div class="card__label">Total no período filtrado</div>
+            <div class="card__value rel-resumo__valor" id="rel-total">—</div>
+          </div>
+        </div>
+
+        <section class="card admin-card">
+          <div class="card__label">Atendimentos por dia</div>
+          <div id="rel-grafico">carregando…</div>
+        </section>
+
+        <div class="rel-rankings">
+          <section class="card admin-card">
+            <div class="card__label">Quem mais atendeu</div>
+            <div id="rel-ranking-volume">—</div>
+          </section>
+          <section class="card admin-card">
+            <div class="card__label">Melhores notas</div>
+            <div id="rel-ranking-notas">—</div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="avatar.js"></script>
+  <script src="relatorios.js"></script>
+</body>
+</html>

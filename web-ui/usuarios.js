@@ -16,11 +16,28 @@
     erro: document.getElementById("usuario-erro"),
     sucesso: document.getElementById("usuario-sucesso"),
     lista: document.getElementById("usuarios-lista"),
+    inputFoto: document.getElementById("input-foto"),
+    fotoPreview: document.getElementById("foto-preview"),
   };
+
+  let fotoSelecionada = null;
 
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
   el.btnSair.addEventListener("click", () => window.logoutStaff());
   window.attachPasswordToggle(el.btnMostrarSenha, el.senha);
+  el.fotoPreview.innerHTML = window.avatarHtml("", null, 48);
+
+  el.inputFoto.addEventListener("change", async () => {
+    try {
+      fotoSelecionada = await window.lerFotoComoDataUri(el.inputFoto.files[0]);
+      el.fotoPreview.innerHTML = window.avatarHtml(el.nome.value, fotoSelecionada, 48);
+    } catch (err) {
+      el.erro.textContent = err.message;
+      el.erro.hidden = false;
+      el.inputFoto.value = "";
+      fotoSelecionada = null;
+    }
+  });
 
   function escapeHtml(str) {
     const div = document.createElement("div");
@@ -46,9 +63,12 @@
         const linha = document.createElement("div");
         linha.className = "usuarios-linha";
         linha.innerHTML = `
-          <div>
-            <div class="usuarios-linha__nome">${escapeHtml(u.nome)}</div>
-            <div class="usuarios-linha__login">@${escapeHtml(u.usuario)}</div>
+          <div class="usuarios-linha__principal">
+            ${window.avatarHtml(u.nome, u.foto, 36)}
+            <div>
+              <div class="usuarios-linha__nome">${escapeHtml(u.nome)}</div>
+              <div class="usuarios-linha__login">@${escapeHtml(u.usuario)}</div>
+            </div>
           </div>
           <span class="usuarios-badge usuarios-badge--${u.papel}">${escapeHtml(u.papel)}</span>
         `;
@@ -74,11 +94,14 @@
           usuario: el.usuario.value.trim(),
           senha: el.senha.value,
           papel,
+          foto: fotoSelecionada,
         }),
       });
       el.sucesso.textContent = `Usuário "${criado.nome}" criado como ${criado.papel}.`;
       el.sucesso.hidden = false;
       el.form.reset();
+      fotoSelecionada = null;
+      el.fotoPreview.innerHTML = window.avatarHtml("", null, 48);
       await carregarUsuarios();
     } catch (err) {
       el.erro.textContent = err.message || "Não foi possível criar o usuário.";

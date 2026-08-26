@@ -215,19 +215,6 @@
 .menu-sanfona__item--sair { color: #b3261e; }
 .menu-sanfona__icon { font-size: 15px; }
 
-/* Relatorios */
-.rel-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--md-surface-variant);
-}
-.rel-row:last-child { border-bottom: none; }
-.rel-row__nome { font-weight: 600; }
-.rel-row__valor { color: var(--md-on-surface-variant); }
-
 .kb-entry {
   font-size: 12px;
   padding: 8px;

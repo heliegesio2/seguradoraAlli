@@ -52,6 +52,15 @@
               <span class="hint" style="margin:0">Mínimo de 6 caracteres.</span>
             </label>
 
+            <label class="login-field">
+              <span>Foto (opcional)</span>
+              <div class="usuarios-foto-campo">
+                <span id="foto-preview"></span>
+                <input id="input-foto" type="file" accept="image/*" />
+              </div>
+              <span class="hint" style="margin:0">Até 500KB.</span>
+            </label>
+
             <div class="login-field">
               <span>Perfil</span>
               <div class="admin-options" style="margin:6px 0 0">
@@ -74,7 +83,7 @@
 
             <button class="btn btn--filled" type="submit" id="btn-criar-usuario">Criar usuário</button>
             <p class="login-erro" id="usuario-erro" hidden></p>
-            <p class="usuarios-sucesso" id="usuario-sucesso" hidden></p>
+            <p class="sucesso-msg" id="usuario-sucesso" hidden></p>
           </form>
         </section>
 
@@ -89,6 +98,7 @@
 
   <script src="config.js"></script>
   <script src="auth.js"></script>
+  <script src="avatar.js"></script>
   <script src="usuarios.js"></script>
 </body>
 </html>

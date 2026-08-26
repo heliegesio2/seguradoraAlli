@@ -1,0 +1,13 @@
+/* Menu interno "Meus dados" (qualquer usuario logado): trocar a propria foto. */
+
+.meus-dados-foto {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 14px 0;
+}
+.meus-dados-foto__acoes { display: flex; flex-direction: column; }
+.meus-dados-foto__acoes input[type="file"] { font-size: 12.5px; }
+
+.meus-dados-botoes { display: flex; gap: 10px; }
+.meus-dados-botoes .btn { width: auto; margin-top: 0; }

@@ -17,6 +17,7 @@ _lock = threading.Lock()
 
 _PAPEIS_VALIDOS = {"admin", "atendente"}
 _PBKDF2_ITERACOES = 200_000
+_FOTO_TAMANHO_MAXIMO = 700_000  # ~500KB de imagem depois do overhead do base64
 
 # Usuarios de teste (mesmas credenciais que ja apareciam na tela de login) -
 # usados so para semear o arquivo na primeira vez que o container sobe.
@@ -74,18 +75,35 @@ _sessoes: dict[str, dict] = {}  # token -> {"usuario", "papel", "nome"}
 def _criar_sessao(usuario: str) -> dict:
     dados = _usuarios[usuario]
     token = secrets.token_hex(16)
-    sessao = {"usuario": usuario, "papel": dados["papel"], "nome": dados["nome"]}
+    sessao = {
+        "usuario": usuario, "papel": dados["papel"], "nome": dados["nome"],
+        "foto": dados.get("foto"),
+    }
     _sessoes[token] = sessao
     return {"token": token, **sessao}
 
 
-def cadastrar(usuario: str, senha: str, nome: str, papel: str) -> dict:
+def _validar_foto(foto: str | None) -> str | None:
+    """Foto vem do front ja como data URI (data:image/...;base64,...) - nunca
+    tocamos disco nem outro storage, fica direto no registro do usuario em
+    usuarios.json. So valida prefixo e tamanho; None/"" significa "sem foto"."""
+    if not foto:
+        return None
+    if not foto.startswith("data:image/"):
+        raise ValueError("A foto precisa ser uma imagem (PNG, JPG etc).")
+    if len(foto) > _FOTO_TAMANHO_MAXIMO:
+        raise ValueError("Foto muito grande - use uma imagem de até ~500KB.")
+    return foto
+
+
+def cadastrar(usuario: str, senha: str, nome: str, papel: str, foto: str | None = None) -> dict:
     """Cria um usuario novo - so um admin pode chamar isso (menu interno, ver
     exigir_papel('admin') em main.py), escolhendo o perfil de quem esta sendo
-    cadastrado. Levanta ValueError com uma mensagem apresentavel na tela quando
-    algo nao bate (login duplicado, senha curta, perfil invalido etc). Retorna
-    os dados publicos do usuario criado - NAO cria sessao (quem cadastrou
-    continua logado como si mesmo, nao "vira" o usuario novo)."""
+    cadastrado (e, opcionalmente, uma foto). Levanta ValueError com uma
+    mensagem apresentavel na tela quando algo nao bate (login duplicado,
+    senha curta, perfil invalido, foto invalida etc). Retorna os dados
+    publicos do usuario criado - NAO cria sessao (quem cadastrou continua
+    logado como si mesmo, nao "vira" o usuario novo)."""
     usuario_normalizado = (usuario or "").strip().lower()
     nome = (nome or "").strip()
     if not usuario_normalizado or not senha or not nome:
@@ -96,16 +114,32 @@ def cadastrar(usuario: str, senha: str, nome: str, papel: str) -> dict:
         raise ValueError("Escolha um perfil válido (admin ou atendente).")
     if usuario_normalizado in _usuarios:
         raise ValueError("Já existe um usuário cadastrado com esse login.")
+    foto_validada = _validar_foto(foto)
 
-    _usuarios[usuario_normalizado] = {"papel": papel, "nome": nome, **_hash_senha(senha)}
+    _usuarios[usuario_normalizado] = {
+        "papel": papel, "nome": nome, "foto": foto_validada, **_hash_senha(senha),
+    }
     _salvar(_usuarios)
-    return {"usuario": usuario_normalizado, "papel": papel, "nome": nome}
+    return {"usuario": usuario_normalizado, "papel": papel, "nome": nome, "foto": foto_validada}
+
+
+def atualizar_foto(usuario: str, foto: str | None) -> dict:
+    """Auto-atendimento: qualquer usuario logado troca a PROPRIA foto (menu
+    'Meus dados'). Passar None/"" remove a foto atual."""
+    if usuario not in _usuarios:
+        raise ValueError("Usuário não encontrado.")
+    foto_validada = _validar_foto(foto)
+    _usuarios[usuario]["foto"] = foto_validada
+    _salvar(_usuarios)
+    dados = _usuarios[usuario]
+    return {"usuario": usuario, "papel": dados["papel"], "nome": dados["nome"], "foto": foto_validada}
 
 
 def listar_usuarios() -> list[dict]:
-    """Lista publica (sem salt/hash) pro menu interno de usuarios do admin."""
+    """Lista publica (sem salt/hash) pro menu interno de usuarios do admin e
+    para os relatorios enriquecerem os rankings com a foto de cada um."""
     return [
-        {"usuario": usuario, "papel": dados["papel"], "nome": dados["nome"]}
+        {"usuario": usuario, "papel": dados["papel"], "nome": dados["nome"], "foto": dados.get("foto")}
         for usuario, dados in sorted(_usuarios.items())
     ]
 

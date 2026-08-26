@@ -44,13 +44,6 @@
     selectOrdenacao: document.getElementById("select-ordenacao"),
     kbPendentes: document.getElementById("kb-pendentes"),
     kbAprovadas: document.getElementById("kb-aprovadas"),
-    btnToggleRelatorios: document.getElementById("btn-toggle-relatorios"),
-    btnFecharRelatorios: document.getElementById("btn-fechar-relatorios"),
-    relatoriosPanel: document.getElementById("relatorios-panel"),
-    relHoje: document.getElementById("rel-hoje"),
-    relTotal: document.getElementById("rel-total"),
-    relRankingVolume: document.getElementById("rel-ranking-volume"),
-    relRankingNotas: document.getElementById("rel-ranking-notas"),
     favicon: document.getElementById("favicon"),
   };
 
@@ -312,34 +305,6 @@
 
   // --- base de conhecimento ----------------------------------------------
 
-  function renderRanking(el_, itens, formatarLinha) {
-    el_.innerHTML = "";
-    if (!itens.length) {
-      el_.textContent = "sem dados ainda";
-      return;
-    }
-    for (const item of itens) {
-      const row = document.createElement("div");
-      row.className = "rel-row";
-      row.innerHTML = formatarLinha(item);
-      el_.appendChild(row);
-    }
-  }
-
-  async function carregarRelatorios() {
-    const dados = await api("/reports/summary");
-    el.relHoje.textContent = dados.atendimentos_hoje;
-    el.relTotal.textContent = dados.total_atendimentos;
-    renderRanking(el.relRankingVolume, dados.ranking_volume, (item) => `
-      <span class="rel-row__nome">${escapeHtml(item.atendente)}</span>
-      <span class="rel-row__valor">${item.total} atendimento(s)</span>
-    `);
-    renderRanking(el.relRankingNotas, dados.ranking_notas, (item) => `
-      <span class="rel-row__nome">${escapeHtml(item.atendente)}</span>
-      <span class="rel-row__valor">${item.media_nota}/10 (${item.avaliacoes})</span>
-    `);
-  }
-
   async function carregarKb() {
     const entradas = await api("/knowledge-base");
     const pendentes = entradas.filter((e) => !e.aprovado);
@@ -459,29 +424,13 @@
     }
   });
 
-  function fecharPainelLaterais({ exceto } = {}) {
-    if (exceto !== "kb") el.kbPanel.hidden = true;
-    if (exceto !== "relatorios") el.relatoriosPanel.hidden = true;
-  }
-
   el.btnToggleKb.addEventListener("click", () => {
     el.menuPainel.hidden = true;
-    fecharPainelLaterais({ exceto: "kb" });
     el.kbPanel.hidden = !el.kbPanel.hidden;
     if (!el.kbPanel.hidden) carregarKb().catch(console.error);
   });
   el.btnFecharKb.addEventListener("click", () => {
     el.kbPanel.hidden = true;
-  });
-
-  el.btnToggleRelatorios.addEventListener("click", () => {
-    el.menuPainel.hidden = true;
-    fecharPainelLaterais({ exceto: "relatorios" });
-    el.relatoriosPanel.hidden = !el.relatoriosPanel.hidden;
-    if (!el.relatoriosPanel.hidden) carregarRelatorios().catch(console.error);
-  });
-  el.btnFecharRelatorios.addEventListener("click", () => {
-    el.relatoriosPanel.hidden = true;
   });
 
   el.detailEnviar.addEventListener("click", () => {

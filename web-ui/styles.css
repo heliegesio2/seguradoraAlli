@@ -131,6 +131,26 @@ html, body {
   flex-shrink: 0;
 }
 .btn--fab:hover { box-shadow: var(--md-elevation-2); }
+
+/* Avatar (foto do usuario ou iniciais) - usado na lista de Usuarios, nos
+   rankings de Relatorios e em Meus dados. */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar--fallback {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  font-weight: 700;
+}
+
+/* Mensagem de sucesso inline em formularios (Usuarios, Meus dados etc). */
+.sucesso-msg { color: #146c43; font-size: 13px; margin: 10px 0 0; }
+.sucesso-msg[hidden] { display: none; }
 .btn--filled {
   background: var(--md-primary); color: var(--md-on-primary);
   width: 100%; margin-top: 8px;
