@@ -399,6 +399,139 @@ window.DOCS = {
             },
           ],
         },
+        {
+          id: "base-de-conhecimento-e-anthropic",
+          titulo: "Base de conhecimento e uso da Anthropic",
+          atualizado: "26 de ago de 2026",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Duas perguntas frequentes num artigo só: <strong>como e em que momento a base de " +
+                "conhecimento é usada</strong>, e <strong>em que momento a Anthropic (Claude) é chamada</strong> " +
+                "dentro da plataforma — e, tão importante quanto, em quais decisões ela " +
+                "<strong>nunca</strong> é chamada.",
+            },
+            { tipo: "h2", id: "o-que-e-a-base-de-conhecimento", titulo: "O que é a base de conhecimento" },
+            {
+              tipo: "p",
+              html:
+                "Um arquivo JSON simples (<code>agent-service/data/knowledge_base.json</code>, gerido por " +
+                "<code>knowledge_base.py</code>) com casos resolvidos por atendentes humanos: motivo, " +
+                "tags, a solução em texto, e um sinalizador <code>aprovado</code>. Casamento é por " +
+                "<strong>sobreposição de palavras-chave</strong> (tags do caso × palavras da mensagem do " +
+                "lead) — MVP deliberado, sem embeddings; ver a nota sobre isso no artigo de Segurança.",
+            },
+            { tipo: "h2", id: "quando-e-consultada", titulo: "Quando ela é consultada" },
+            {
+              tipo: "p",
+              html:
+                "<strong>Só num momento específico:</strong> durante a triagem de handoff " +
+                "(<code>_avancar_triagem_handoff</code> em <code>orchestrator.py</code>), depois que o " +
+                "agente já sabe o <em>nome</em> do lead e acabou de receber a descrição do " +
+                "<em>problema</em> — e <strong>antes</strong> de decidir se escala para um humano.",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>buscar_caso_similar(motivo, problema)</code> só considera entradas com " +
+                  "<code>aprovado: true</code>, e só retorna um caso se o número de palavras em comum " +
+                  "for <code>&gt;= MIN_OVERLAP_SCORE</code> (hoje 2).",
+                "<strong>Achou um caso parecido:</strong> o agente resolve sozinho ali mesmo — gera a " +
+                  "resposta usando a solução conhecida como fato (grounded), nunca escala, e registra o " +
+                  "evento <code>kb_aplicado</code> com o id do caso e o score.",
+                "<strong>Não achou nada com confiança suficiente:</strong> só então escala de verdade " +
+                  "para um atendente humano (<code>_escalar_para_handoff</code>).",
+                "Fora desse momento (coletando dados, cotação, fechamento etc.) a base de conhecimento " +
+                  "não é consultada — não faz sentido buscar solução pra problema relatado quando ainda " +
+                  "não há problema relatado nenhum.",
+              ],
+            },
+            { tipo: "h2", id: "quando-e-alimentada", titulo: "Quando ela é alimentada" },
+            {
+              tipo: "p",
+              html:
+                "Um atendente pode registrar \"como resolveu\" em qualquer conversa, a qualquer momento " +
+                "(painel do atendente, card \"Registrar resolução\") — não precisa ser exatamente durante " +
+                "um handoff. Isso chama <code>registrar_resolucao_pendente</code>, que gera as tags " +
+                "automaticamente a partir do motivo + problema (sem digitação manual) e grava a entrada " +
+                "com <code>aprovado: false</code>.",
+            },
+            {
+              tipo: "p",
+              html:
+                "Fica <strong>pendente até um admin aprovar</strong> (ou reprovar, o que remove a entrada " +
+                "de vez) no painel Base de Conhecimento — só entradas aprovadas entram no casamento " +
+                "acima. Esse degrau existe de propósito: evita que uma resolução ruim \"vire verdade\" " +
+                "sozinha e o agente passe a repetir um conselho errado pra outros leads.",
+            },
+            { tipo: "h2", id: "quando-a-anthropic-e-usada", titulo: "Quando a Anthropic (Claude) é usada" },
+            {
+              tipo: "p",
+              html:
+                "Toda chamada à API da Anthropic passa por <code>agent-service/app/llm.py</code>, e só " +
+                "existem duas funções: <code>extrair()</code> (dados estruturados, tool use forçado) e " +
+                "<code>gerar_resposta()</code> (texto livre, mas sempre com fatos passados explicitamente " +
+                "— nunca \"invente o que achar melhor\").",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong><code>extrair()</code> roda em <em>toda</em> mensagem do lead</strong>, sem " +
+                  "exceção — é a primeira coisa que <code>handle_message()</code> faz. Extrai sinais " +
+                  "(pedido de humano, fora de escopo, reclamação/sinistro, pedido de desconto, confiança " +
+                  "da interpretação) e valores de slot (idade, CEP etc.) da mensagem, usando o histórico " +
+                  "recente como contexto.",
+                "<strong><code>gerar_resposta()</code> roda toda vez que o agente precisa escrever uma " +
+                  "frase</strong> — a lista completa de situações: pedir o próximo dado que falta " +
+                  "(idade/ano/CEP/data — nunca o plano, que é chip fixo), pedir correção de um dado " +
+                  "inválido, explicar uma recusa de negócio (422), avisar que a cotação está instável " +
+                  "(erro de infra), pedir nome e depois o problema na triagem de handoff, responder " +
+                  "usando uma solução da base de conhecimento, avisar que vai encaminhar para humano, " +
+                  "confirmar aceite ou recusa de uma cotação, responder quando não ficou claro o que o " +
+                  "lead quis dizer sobre a cotação, se despedir após uma recusa de negócio aceita, " +
+                  "responder mensagens que chegam com a conversa já fechada/em handoff/aguardando " +
+                  "avaliação, e o agradecimento final elaborado depois da nota de 1 a 10.",
+              ],
+            },
+            { tipo: "h2", id: "quando-nao-e-usada", titulo: "Quando ela NUNCA é usada" },
+            {
+              tipo: "p",
+              html:
+                "Tão importante quanto saber onde a IA fala é saber onde ela <strong>não decide nada</strong> " +
+                "— essa separação é a decisão central do projeto:",
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>O preço da cotação</strong> — sempre um template Python direto do JSON do " +
+                  "<code>quote-service</code> (<code>_apresentar_cotacao</code>), nunca escrito pelo LLM.",
+                "<strong>Quais dados pedir e em que ordem</strong> — fixo em <code>REQUIRED_SLOTS</code>, " +
+                  "código puro.",
+                "<strong>Se escala para humano ou não</strong> — <code>_motivo_handoff</code> é uma " +
+                  "função determinística; o LLM só sinaliza \"o lead parece estar pedindo isso\", quem " +
+                  "decide é o código.",
+                "<strong>Se repete a tentativa de cotação</strong> — retry/backoff em " +
+                  "<code>quote_client.py</code>, sem nenhuma chamada à IA envolvida.",
+                "<strong>Qual usuário pode acessar o quê</strong> — controle de acesso é " +
+                  "<code>exigir_papel</code> no backend, código puro.",
+              ],
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>agent-service/app/knowledge_base.py</code> — matching por palavras-chave e o " +
+                  "ciclo de aprovação.",
+                "<code>agent-service/app/llm.py</code> — as duas únicas funções que chamam a Anthropic.",
+                "<code>agent-service/app/orchestrator.py</code> — todo call site de " +
+                  "<code>extrair()</code>/<code>gerar_resposta()</code>, com o contexto de cada um.",
+                "Modelo do Claude e effort são configuráveis em Admin, sem precisar mexer em código — " +
+                  "ver o artigo <strong>Como rodar a aplicação</strong>.",
+              ],
+            },
+          ],
+        },
       ],
     },
     {
