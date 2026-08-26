@@ -1,0 +1,239 @@
+/* Site de documentacao interna (docs.html) - layout de 3 colunas inspirado em
+   documentacoes de API (arvore lateral + artigo + indice "nesta pagina" com
+   scroll-spy), com a paleta e os tokens do proprio AutoSeguro. */
+
+.docs-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Coluna 1: arvore de categorias/artigos ---------------------------------- */
+
+.docs-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--md-surface);
+  border-right: 1px solid var(--md-surface-variant);
+  padding: 22px 14px;
+  overflow-y: auto;
+}
+.docs-sidebar__title {
+  font-size: 15px;
+  font-weight: 800;
+  padding: 0 8px;
+  margin-bottom: 14px;
+}
+.docs-filtro {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--md-radius-s);
+  border: 1px solid var(--md-surface-variant);
+  background: var(--md-background);
+  color: var(--md-on-surface);
+  font-size: 13px;
+  font-family: inherit;
+  margin-bottom: 18px;
+}
+.docs-arvore__grupo { margin-bottom: 18px; }
+.docs-arvore__categoria {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--md-on-surface-variant);
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+.docs-arvore__item {
+  display: block;
+  padding: 8px 10px;
+  border-radius: var(--md-radius-s);
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--md-on-surface);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+.docs-arvore__item:hover { background: var(--md-background); }
+.docs-arvore__item--ativo {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  font-weight: 700;
+}
+.docs-arvore__vazio { font-size: 12.5px; color: var(--md-on-surface-variant); padding: 0 8px; }
+
+/* Coluna 2: artigo ---------------------------------------------------------- */
+
+.docs-conteudo {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 36px 44px 80px;
+}
+
+.docs-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--md-on-surface-variant);
+  margin-bottom: 16px;
+}
+.docs-breadcrumb__sep { opacity: 0.6; }
+
+.docs-titulo {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 6px;
+  max-width: 760px;
+}
+.docs-meta { font-size: 12.5px; color: var(--md-on-surface-variant); margin-bottom: 16px; }
+
+.docs-utilitarios {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--md-surface-variant);
+}
+.docs-util-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--md-primary);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.docs-util-btn:hover { text-decoration: underline; }
+
+.docs-callout {
+  max-width: 760px;
+  border-radius: var(--md-radius-s);
+  border-left: 4px solid var(--md-primary);
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.docs-corpo { max-width: 760px; font-size: 14.5px; line-height: 1.75; color: var(--md-on-surface); }
+.docs-corpo p { margin: 0 0 16px; }
+.docs-corpo ul { margin: 0 0 22px; padding-left: 22px; }
+.docs-corpo li { margin-bottom: 9px; }
+.docs-corpo code {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12.5px;
+  background: var(--md-surface-variant);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.docs-corpo pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.docs-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 36px 0 14px;
+  scroll-margin-top: 24px;
+}
+.docs-heading__anchor {
+  font-size: 14px;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.docs-heading:hover .docs-heading__anchor { opacity: 0.55; }
+.docs-heading__anchor:hover { opacity: 1; }
+
+.docs-code {
+  max-width: 760px;
+  background: var(--md-navy);
+  color: var(--md-on-navy);
+  padding: 16px 18px;
+  border-radius: var(--md-radius-s);
+  overflow-x: auto;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin: 0 0 22px;
+  white-space: pre;
+}
+.docs-markdown-preview { white-space: pre-wrap; }
+
+.docs-feedback {
+  max-width: 760px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 34px;
+  padding-top: 20px;
+  border-top: 1px solid var(--md-surface-variant);
+  font-size: 13px;
+  color: var(--md-on-surface-variant);
+}
+.docs-feedback__btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--md-surface-variant);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+.docs-feedback__btn:hover { background: var(--md-background); }
+.docs-feedback__msg { font-weight: 700; color: var(--md-primary); }
+
+/* Coluna 3: indice "nesta pagina" com scroll-spy ---------------------------- */
+
+.docs-toc {
+  width: 220px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--md-surface-variant);
+  padding: 26px 16px;
+  overflow-y: auto;
+}
+.docs-toc__titulo {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--md-on-surface-variant);
+  margin-bottom: 12px;
+}
+.docs-toc__item {
+  display: block;
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid transparent;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--md-on-surface-variant);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+.docs-toc__item:hover { color: var(--md-on-surface); }
+.docs-toc__item--ativo { border-left-color: var(--md-primary); color: var(--md-primary); font-weight: 700; }
+.docs-toc__vazio { font-size: 12px; color: var(--md-on-surface-variant); }
+
+@media (max-width: 1100px) {
+  .docs-toc { display: none; }
+}
+@media (max-width: 760px) {
+  .docs-sidebar { width: 220px; }
+  .docs-conteudo { padding: 24px 20px 60px; }
+}

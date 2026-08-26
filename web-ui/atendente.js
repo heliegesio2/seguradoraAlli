@@ -50,10 +50,6 @@
     relTotal: document.getElementById("rel-total"),
     relRankingVolume: document.getElementById("rel-ranking-volume"),
     relRankingNotas: document.getElementById("rel-ranking-notas"),
-    btnToggleDocs: document.getElementById("btn-toggle-docs"),
-    btnFecharDocs: document.getElementById("btn-fechar-docs"),
-    docsPanel: document.getElementById("docs-panel"),
-    docLista: document.getElementById("doc-lista"),
     favicon: document.getElementById("favicon"),
   };
 
@@ -343,38 +339,6 @@
     `);
   }
 
-  function renderDocumentacao() {
-    const itens = window.DOCUMENTACAO_ITENS || [];
-    el.docLista.innerHTML = "";
-    if (!itens.length) {
-      el.docLista.textContent = "Nenhum item ainda.";
-      return;
-    }
-    itens.forEach((item, idx) => {
-      const bloco = document.createElement("div");
-      bloco.className = "doc-item";
-
-      const pergunta = document.createElement("button");
-      pergunta.type = "button";
-      pergunta.className = "doc-item__pergunta";
-      pergunta.innerHTML = `<span>${escapeHtml(item.titulo)}</span><span class="doc-item__icon">+</span>`;
-
-      const resposta = document.createElement("div");
-      resposta.className = "doc-item__resposta";
-      resposta.innerHTML = `<div class="doc-item__resposta-inner">${item.corpo}</div>`;
-
-      pergunta.addEventListener("click", () => {
-        bloco.classList.toggle("doc-item--aberto");
-      });
-
-      bloco.appendChild(pergunta);
-      bloco.appendChild(resposta);
-      el.docLista.appendChild(bloco);
-
-      if (idx === 0) bloco.classList.add("doc-item--aberto");
-    });
-  }
-
   async function carregarKb() {
     const entradas = await api("/knowledge-base");
     const pendentes = entradas.filter((e) => !e.aprovado);
@@ -497,7 +461,6 @@
   function fecharPainelLaterais({ exceto } = {}) {
     if (exceto !== "kb") el.kbPanel.hidden = true;
     if (exceto !== "relatorios") el.relatoriosPanel.hidden = true;
-    if (exceto !== "docs") el.docsPanel.hidden = true;
   }
 
   el.btnToggleKb.addEventListener("click", () => {
@@ -520,14 +483,6 @@
     el.relatoriosPanel.hidden = true;
   });
 
-  el.btnToggleDocs.addEventListener("click", () => {
-    el.menuPainel.hidden = true;
-    fecharPainelLaterais({ exceto: "docs" });
-    el.docsPanel.hidden = !el.docsPanel.hidden;
-  });
-  el.btnFecharDocs.addEventListener("click", () => {
-    el.docsPanel.hidden = true;
-  });
   el.detailEnviar.addEventListener("click", () => {
     detailMicControl.parar();
     enviarComoAtendente();
@@ -542,7 +497,6 @@
   el.topbarUsuario.textContent = `${sessao.nome} (${sessao.papel})`;
   if (sessao.papel !== "admin") el.linkAdmin.hidden = true;
   el.btnSair.addEventListener("click", () => window.logoutStaff());
-  renderDocumentacao();
 
   poll();
   setInterval(poll, POLL_MS);
