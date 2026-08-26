@@ -18,6 +18,7 @@
   transition: transform 120ms ease;
 }
 .whatsapp-fab:hover { transform: scale(1.06); }
+.whatsapp-fab[hidden] { display: none; }
 .whatsapp-fab__pulse {
   position: absolute;
   inset: 0;
