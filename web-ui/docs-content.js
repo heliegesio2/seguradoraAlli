@@ -77,6 +77,16 @@ window.DOCS = {
                 "<strong>Base de conhecimento (arquivo):</strong> as resoluções de atendentes " +
                   "aprovadas por um admin ficam em <code>agent-service/data/knowledge_base.json</code>, " +
                   "usada para o agente resolver sozinho casos parecidos no futuro.",
+                "<strong>MongoDB (cifrado, sobrevive a reinício de container):</strong> toda vez que " +
+                  "algo é gravado no log de eventos, uma cópia também vai para uma coleção no " +
+                  "MongoDB — mas <strong>o conteúdo (payload) é cifrado antes de sair do processo do " +
+                  "agent-service</strong>, com uma chave simétrica (Fernet/AES) que existe só na " +
+                  "variável de ambiente <code>MONGO_ENCRYPTION_KEY</code>, nunca dentro do banco. Só " +
+                  "<code>conversation_id</code>, <code>type</code> e <code>timestamp</code> ficam em texto " +
+                  "puro (para dar para filtrar/consultar); o campo <code>payload_cifrado</code> é " +
+                  "opaco para qualquer um que tenha só acesso de admin ao MongoDB. Se a chave não " +
+                  "estiver configurada, a gravação no Mongo é desativada automaticamente — o agente " +
+                  "nunca grava texto em claro lá.",
               ],
             },
             { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
@@ -86,6 +96,7 @@ window.DOCS = {
                 "<code>agent-service/app/orchestrator.py</code> — máquina de estados e critério de handoff.",
                 "<code>agent-service/app/llm.py</code> — extração estruturada e geração de texto.",
                 "<code>agent-service/app/store.py</code> — armazenamento em memória e log de eventos.",
+                "<code>agent-service/app/mongo_client.py</code> — persistência cifrada das interações no MongoDB.",
               ],
             },
           ],

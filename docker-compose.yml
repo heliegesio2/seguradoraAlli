@@ -1,4 +1,20 @@
 services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"  # so para inspecao local (ex.: MongoDB Compass) - nao exponha assim em producao
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USER:-autoseguro}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD:-changeme}"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   quote-api:
     build: ./quote-service
     ports:
@@ -24,8 +40,17 @@ services:
       # WhatsApp Business API. "whatsapp": encaminha para o numero real abaixo.
       HANDOFF_MODE: "${HANDOFF_MODE:-site}"
       WHATSAPP_BUSINESS_NUMBER: "${WHATSAPP_BUSINESS_NUMBER:-}"
+      # Copia cifrada de toda interacao (mensagens, tentativas de cotacao, handoff...)
+      # persistida no MongoDB - ver agent-service/app/mongo_client.py. Sem
+      # MONGO_ENCRYPTION_KEY valida, a persistencia fica desativada (nunca grava em claro).
+      MONGO_URI: "mongodb://${MONGO_ROOT_USER:-autoseguro}:${MONGO_ROOT_PASSWORD:-changeme}@mongo:27017/?authSource=admin"
+      MONGO_DB: "${MONGO_DB:-autoseguro}"
+      MONGO_ENCRYPTION_KEY: "${MONGO_ENCRYPTION_KEY:-}"
     depends_on:
-      - quote-api
+      quote-api:
+        condition: service_started
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
 
   web-ui:
@@ -35,3 +60,6 @@ services:
     depends_on:
       - agent-service
     restart: unless-stopped
+
+volumes:
+  mongo-data:

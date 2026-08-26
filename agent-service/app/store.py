@@ -1,9 +1,13 @@
-"""Estado das conversas (em memoria - reinicia com o container) e log de eventos
-persistido em JSONL para rastreabilidade (cada mensagem/tentativa/decisao vira uma linha)."""
+"""Estado das conversas (em memoria - reinicia com o container), log de eventos
+persistido em JSONL para rastreabilidade local (cada mensagem/tentativa/decisao
+vira uma linha) e, em paralelo, uma copia cifrada de cada evento no MongoDB
+(ver mongo_client.py) - essa e a persistencia que sobrevive a reinicio do
+container e que nem um admin do banco consegue ler em claro."""
 from __future__ import annotations
 import json, threading
 from pathlib import Path
 from typing import Any
+from . import mongo_client
 from .models import Conversation, now_iso, new_id
 
 _LOG_PATH = Path(__file__).resolve().parent.parent / "logs" / "events.jsonl"
@@ -42,3 +46,6 @@ def log_event(conversation_id: str, event_type: str, payload: dict[str, Any]) ->
     with _lock:
         with _LOG_PATH.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    mongo_client.registrar_interacao(
+        entry["event_id"], conversation_id, event_type, entry["timestamp"], payload
+    )

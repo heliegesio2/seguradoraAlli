@@ -406,4 +406,4 @@ def _finalizar(
         oculto_para_atendente=oculto_para_atendente, pede_avaliacao=pede_avaliacao,
     ))
     conv.touch()
-    log_event(conv.id, "resposta_enviada", {"status": conv.status})
+    log_event(conv.id, "resposta_enviada", {"status": conv.status, "texto": resposta})

@@ -159,7 +159,8 @@ lead (navegador, web-ui) --HTTP--> agent-service (FastAPI)
                                         |-- Claude API (NLU + geração de texto)
                                         |-- quote-service (FastAPI mock, instável de proposito)
                                         |-- data/knowledge_base.json (base de conhecimento)
-                                        |-- logs/events.jsonl (rastreabilidade)
+                                        |-- logs/events.jsonl (rastreabilidade local, em claro)
+                                        |-- MongoDB (rastreabilidade persistente, CIFRADA)
 ```
 
 Decisão central de design: **separação rígida entre "entender/falar" (LLM) e
@@ -167,3 +168,49 @@ Decisão central de design: **separação rígida entre "entender/falar" (LLM) e
 avaliação do desafio: "o que ele faz quando a `/quote` falha" (retry determinístico,
 nunca inventa preço) e "o critério de handoff é explícito e defensável" (função
 `_motivo_handoff` em `orchestrator.py`, testável isoladamente).
+
+## Persistência em MongoDB (adicionado em 2026-08-26)
+
+Todo evento que já ia para `logs/events.jsonl` (mensagem do lead/agente/atendente,
+tentativa de cotação, handoff, resolução, avaliação) agora também é gravado numa
+coleção `interacoes` no MongoDB (serviço `mongo` no `docker-compose.yml`) — isso é o
+que dá persistência real entre reinícios do container (o `logs/events.jsonl` e o
+estado em memória continuam existindo, sem mudança de comportamento).
+
+**Requisito do usuário**: um admin do banco (acesso root ao Mongo) não pode conseguir
+ler o conteúdo das interações. Solução: criptografia **do lado da aplicação**, não do
+banco — `agent-service/app/mongo_client.py` cifra o `payload` inteiro de cada evento
+com Fernet (AES simétrico autenticado) antes de sair do processo, usando uma chave
+(`MONGO_ENCRYPTION_KEY`) que só existe na variável de ambiente do `agent-service`,
+nunca dentro do Mongo. Ficam em texto puro só `conversation_id`, `type` e
+`timestamp` (metadados não sensíveis, úteis pra filtrar/consultar); o campo
+`payload_cifrado` é opaco pra qualquer um com só acesso ao banco — inclusive um
+"encryption at rest" nativo do Mongo não resolveria isso, porque um admin com
+permissão de leitura via `mongosh`/Compass ainda veria os dados decifrados pelo
+próprio servidor. Por isso a cifra tem que ser client-side.
+
+Design defensivo: se `MONGO_ENCRYPTION_KEY` não estiver configurada (ou for
+inválida), a gravação no Mongo fica **desativada automaticamente** — o agente nunca
+grava payload em claro no banco por engano. E se o Mongo estiver fora do ar, a
+gravação falha silenciosamente (só loga um aviso no stderr) sem quebrar a resposta
+ao lead — é persistência de melhor esforço, igual ao resto do projeto (a
+funcionalidade principal nunca depende de infra secundária estar 100% no ar).
+
+Testado manualmente (verificação relatada ao usuário): conectei via `mongosh` com as
+credenciais root e confirmei que só dá pra ver ciphertext; decifrei de dentro do
+container do `agent-service` (que tem a chave) pra confirmar o roundtrip. Também
+testei parar o container do Mongo, confirmar que a API do agente continua
+respondendo normalmente, e reiniciar o Mongo sem precisar reiniciar o
+`agent-service` (a próxima gravação já funciona — `pymongo` reconecta sozinho).
+
+Variáveis novas em `.env` (ver `.env.example` para os comentários completos):
+`MONGO_ROOT_USER`, `MONGO_ROOT_PASSWORD`, `MONGO_DB`, `MONGO_ENCRYPTION_KEY` (gerar
+com `python -c "import base64, os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())"`
+ou, se `cryptography` estiver instalado, `Fernet.generate_key()`). A porta 27017 do
+Mongo está exposta no `docker-compose.yml` só para inspeção local (`mongosh`,
+MongoDB Compass) — comentário no próprio arquivo avisando que isso não é para
+produção.
+
+A página `web-ui/docs.html` (seção "De onde vêm as perguntas? E onde são gravadas as
+respostas?") já foi atualizada para explicar essa camada nova — é a resposta oficial
+pra "onde os dados ficam gravados" nas perguntas de avaliação do desafio.

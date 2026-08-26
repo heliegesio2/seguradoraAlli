@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /srv
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir fastapi "uvicorn[standard]" "pydantic>=2.6" httpx anthropic
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]" "pydantic>=2.6" httpx anthropic pymongo cryptography
 
 COPY app ./app
 COPY data ./data
