@@ -535,6 +535,172 @@ window.DOCS = {
       ],
     },
     {
+      id: "produto-e-integracoes",
+      titulo: "Produto e integrações",
+      artigos: [
+        {
+          id: "whatsapp-vs-site",
+          titulo: "WhatsApp Business vs. site: quando vale a pena",
+          atualizado: "26 de ago de 2026",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Por padrão, o lead conversa com o agente <strong>dentro do próprio site</strong> " +
+                "(widget embutido, não é o WhatsApp de verdade) até sair a cotação. Só na hora de um " +
+                "atendimento humano é que a plataforma decide se continua no site ou encaminha pro " +
+                "WhatsApp Business real — e isso é <strong>configurável em Admin, sem mexer em código</strong> " +
+                "(<code>handoff_mode</code>): <code>site</code>, <code>whatsapp</code> ou <code>misto</code>.",
+            },
+            { tipo: "h2", id: "vantagem-de-usar-o-whatsapp-real", titulo: "Vantagem de usar o WhatsApp Business real" },
+            {
+              tipo: "lista",
+              itens: [
+                "O lead continua a conversa no <strong>app que ele já usa no dia a dia</strong>, sem " +
+                  "precisar manter a aba do site aberta — reduz o atrito de \"sumir\" no meio do " +
+                  "atendimento.",
+                "Para quem já confia mais no WhatsApp do que num chat de site desconhecido, pode " +
+                  "aumentar a taxa de resposta/conversão.",
+                "Abre caminho pra usar recursos nativos do WhatsApp Business (catálogo, mensagens de " +
+                  "template aprovadas etc.) — nenhum desses está implementado neste projeto, mas o " +
+                  "encaminhamento (<code>criarAreaHandoffWhatsapp</code> em <code>widget.js</code>) já " +
+                  "deixa o caminho pronto pra isso no futuro.",
+              ],
+            },
+            { tipo: "h2", id: "vantagem-de-nao-usar", titulo: "Vantagem de não usar (ficar só no site)" },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>Custo zero de WhatsApp Business Cloud API</strong> — a API oficial da Meta " +
+                  "cobra por conversa iniciada (categorias diferentes de preço conforme o tipo de " +
+                  "mensagem), então toda a etapa de qualificação e cotação — que é a maior parte do " +
+                  "volume de mensagens — sai de graça acontecendo só no widget do site.",
+                "Não precisa de <strong>verificação de negócio na Meta</strong> nem de manter um número " +
+                  "comercial aprovado só pra essa etapa.",
+                "Controle total da experiência (visual, comportamento, notificações) sem depender de " +
+                  "política/rate limit de uma API de terceiro.",
+                "Nenhuma dependência de infraestrutura externa da Meta para o caminho mais importante " +
+                  "(cotar) — só o handoff humano, que é uma fração bem menor das conversas, toca o " +
+                  "WhatsApp real.",
+              ],
+            },
+            { tipo: "h2", id: "por-que-misto-existe", titulo: "Por que o modo \"misto\" existe" },
+            {
+              tipo: "p",
+              html:
+                "É o meio-termo: o lead <em>escolhe</em> continuar no site ou ir para o WhatsApp real " +
+                "na hora do handoff. Serve pra medir na prática qual opção os leads preferem antes de " +
+                "comprometer com uma das duas — e o custo de WhatsApp só existe para quem realmente " +
+                "escolher essa opção, não para todo mundo.",
+            },
+            {
+              tipo: "p",
+              html:
+                "Detalhe de proteção de custo: o botão que leva pro WhatsApp real fica atrás de uma " +
+                "verificação \"não sou um robô\" (reCAPTCHA) — evita que um bot gere custo real de " +
+                "WhatsApp Business API só clicando o botão repetidamente. Ver artigo " +
+                "<strong>Segurança: o que foi implementado</strong>.",
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "Painel <strong>Configurações</strong> (admin) — onde <code>handoff_mode</code> e o " +
+                  "número do WhatsApp Business são cadastrados.",
+                "<code>web-ui/widget.js</code> — <code>criarAvisoAguardando</code> (modo site) e " +
+                  "<code>criarAreaHandoffWhatsapp</code>/<code>criarGateSimulado</code> (modo whatsapp/misto).",
+              ],
+            },
+          ],
+        },
+        {
+          id: "trocar-provedor-de-ia",
+          titulo: "Dá pra trocar a Anthropic por outra IA (ChatGPT, Gemini, DeepSeek)?",
+          atualizado: "26 de ago de 2026",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Pergunta direta: sim, dá pra trocar — mas primeiro uma correção importante de onde " +
+                "isso se aplica, porque o nome \"base de conhecimento\" confunde.",
+            },
+            { tipo: "h2", id: "a-base-de-conhecimento-nao-usa-ia", titulo: "A base de conhecimento em si NÃO usa IA" },
+            {
+              tipo: "p",
+              html:
+                "<code>knowledge_base.py</code> casa casos por <strong>sobreposição de palavras-chave</strong> " +
+                "— nenhuma chamada de IA acontece ali. Então \"trocar a IA da base de conhecimento\" não " +
+                "se aplica hoje, porque não tem IA nenhuma para trocar nesse arquivo específico. Quem usa " +
+                "IA de verdade é o <strong>agente</strong> (entender a mensagem do lead e escrever as " +
+                "respostas) — é aí que a troca de provedor faria sentido.",
+            },
+            { tipo: "h2", id: "onde-a-ia-do-agente-fica-isolada", titulo: "Onde a IA do agente fica isolada" },
+            {
+              tipo: "p",
+              html:
+                "Toda chamada à Anthropic passa por <strong>um único arquivo</strong>: " +
+                "<code>agent-service/app/llm.py</code>, com só duas funções (<code>extrair()</code> e " +
+                "<code>gerar_resposta()</code>). Essa concentração foi decisão de design deliberada — " +
+                "ver o artigo <strong>Base de conhecimento e uso da Anthropic</strong> — e é exatamente " +
+                "o que torna a troca de provedor viável sem reescrever o projeto inteiro.",
+            },
+            { tipo: "h2", id: "o-que-mudaria", titulo: "O que mudaria" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>agent-service/app/llm.py</code> — trocar o cliente (SDK <code>anthropic</code> → " +
+                  "<code>openai</code>, <code>google-generativeai</code>, SDK da DeepSeek etc.).",
+                "A extração estruturada (<code>extrair()</code>) usa <em>tool use forçado</em> — cada " +
+                  "provedor tem uma sintaxe própria pra isso (a Anthropic usa <code>tools</code> + " +
+                  "<code>tool_choice</code>; OpenAI é parecido mas com schema diferente; Gemini usa " +
+                  "<code>function_declarations</code>) — precisa reescrever essa parte especificamente " +
+                  "pro formato do novo provedor.",
+                "Tratamento de erro/retry específico do novo SDK (cada um tem suas próprias exceções).",
+                "Variável de ambiente/config nova para a chave do novo provedor (mesmo padrão de " +
+                  "<code>ANTHROPIC_API_KEY</code> hoje).",
+              ],
+            },
+            { tipo: "h2", id: "o-que-nao-mudaria", titulo: "O que NÃO mudaria" },
+            {
+              tipo: "p",
+              html:
+                "Isso é o que faz a resposta ser \"simples\" e não \"reescrita\": <code>orchestrator.py</code> " +
+                "inteiro (a máquina de estados, o critério de handoff, os slots), " +
+                "<code>knowledge_base.py</code>, <code>quote_client.py</code>, todos os modelos de dados, " +
+                "toda a API FastAPI e o frontend inteiro continuam <strong>exatamente iguais</strong> — " +
+                "nenhum deles sabe (nem precisa saber) qual provedor de IA está por trás de " +
+                "<code>llm.py</code>.",
+            },
+            { tipo: "h2", id: "qual-o-esforco-real", titulo: "Qual o esforço real" },
+            {
+              tipo: "lista",
+              itens: [
+                "<strong>Trocar de um provedor fixo para outro fixo</strong> (ex.: sair da Anthropic e " +
+                  "ir só para OpenAI): esforço <strong>pequeno a médio</strong> — um arquivo concentra " +
+                  "tudo, é um trabalho de um dia focado, não um projeto.",
+                "<strong>Suportar vários provedores ao mesmo tempo</strong>, com o admin escolhendo qual " +
+                  "usar (como já existe hoje pra escolher entre os modelos do Claude): esforço " +
+                  "<strong>médio a grande</strong> — precisaria de uma camada de \"adapter\" (uma " +
+                  "interface comum que cada provedor implementa à sua maneira) e de validar que o " +
+                  "comportamento de extração/geração continua consistente entre provedores diferentes, " +
+                  "já que cada modelo interpreta os mesmos prompts de um jeito ligeiramente diferente.",
+              ],
+            },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>agent-service/app/llm.py</code> — onde a troca aconteceria.",
+                "Artigo <strong>Base de conhecimento e uso da Anthropic</strong> — todos os call sites " +
+                  "de <code>extrair()</code>/<code>gerar_resposta()</code> que continuariam funcionando " +
+                  "iguais depois da troca.",
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
       id: "seguranca",
       titulo: "Segurança",
       artigos: [
