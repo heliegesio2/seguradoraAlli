@@ -304,6 +304,49 @@ window.DOCS = {
       ],
     },
     {
+      id: "fluxograma",
+      titulo: "Fluxograma",
+      artigos: [
+        {
+          id: "fluxograma-do-agente",
+          titulo: "Fluxograma do agente",
+          atualizado: "26 de ago de 2026",
+          aviso:
+            "Este é o desenho conceitual original (docs/fluxograma-agente.drawio). A maioria dos " +
+            "passos bate exatamente com o código; alguns (marcados na explicação de cada passo) " +
+            "descrevem uma versão mais ambiciosa do que existe hoje — ex.: retry assíncrono agendado, " +
+            "que na implementação atual é síncrono, dentro do próprio request. Nunca escondido, sempre " +
+            "dito explicitamente passo a passo.",
+          blocos: [
+            {
+              tipo: "p",
+              html:
+                "Clique em qualquer passo do diagrama (ou no ícone <strong>?</strong> no canto dele) pra " +
+                "ver a explicação — o que aquele passo faz de verdade no código. Use " +
+                "<strong>◀ Anterior</strong> / <strong>Próximo ▶</strong> pra um passeio guiado por todo " +
+                "o fluxo, passo a passo, na ordem. O diagrama tem scroll — arraste pra ver as partes " +
+                "fora da tela.",
+            },
+            { tipo: "fluxograma", dados: window.FLUXOGRAMA },
+            { tipo: "h2", id: "saiba-mais", titulo: "Saiba mais" },
+            {
+              tipo: "lista",
+              itens: [
+                "<code>docs/fluxograma-agente.drawio</code> — arquivo original, abrir em " +
+                  "<code>app.diagrams.net</code> pra editar visualmente.",
+                "<code>web-ui/docs-fluxograma.js</code> — os dados deste diagrama interativo (nós, " +
+                  "setas e as explicações).",
+                "Artigo <strong>De onde vêm as perguntas? E onde são gravadas as respostas?</strong> — " +
+                  "aprofunda os passos de coleta de dados e persistência.",
+                "Artigo <strong>Base de conhecimento e uso da Anthropic</strong> — aprofunda os passos " +
+                  "roxos (consulta e escrita na base de conhecimento).",
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
       id: "arquitetura",
       titulo: "Arquitetura do agente",
       artigos: [

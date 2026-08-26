@@ -103,9 +103,169 @@
         // interativa como string HTML seria inviavel (precisa de listener por
         // botao). So suporta um bloco "arvore" por artigo por enquanto.
         return `<div class="docs-arvore-fs" id="docs-arvore-arquivos"></div>`;
+      case "fluxograma":
+        // Idem - preenchido depois via montarFluxograma().
+        return `<div class="docs-fluxo" id="docs-fluxograma"></div>`;
       default:
         return "";
     }
+  }
+
+  // --- fluxograma interativo do agente (bloco tipo "fluxograma") -----------
+
+  const FLUXO_ESTILO = {
+    inicio: { fill: "#d5e8d4", stroke: "#82b366", forma: "pilula" },
+    fim: { fill: "#f5f5f5", stroke: "#666666", forma: "pilula" },
+    processo: { fill: "#dae8fc", stroke: "#6c8ebf", forma: "retangulo" },
+    subprocesso: { fill: "#dae8fc", stroke: "#6c8ebf", forma: "retangulo" },
+    decisao: { fill: "#ffe6cc", stroke: "#d79b00", forma: "diamante" },
+    perigo: { fill: "#f8cecc", stroke: "#b85450", forma: "retangulo" },
+    sucesso: { fill: "#d5e8d4", stroke: "#82b366", forma: "retangulo" },
+    kb: { fill: "#e1d5e7", stroke: "#9673a6", forma: "retangulo" },
+    armazenamento: { fill: "#e1d5e7", stroke: "#9673a6", forma: "retangulo" },
+    nota: { fill: "#fff2cc", stroke: "#d6b656", forma: "retangulo" },
+  };
+
+  function pontoNaBorda(no, alvoCentroX, alvoCentroY) {
+    const cx = no.x + no.w / 2;
+    const cy = no.y + no.h / 2;
+    const dx = alvoCentroX - cx;
+    const dy = alvoCentroY - cy;
+    if (dx === 0 && dy === 0) return { x: cx, y: cy };
+    const halfW = no.w / 2;
+    const halfH = no.h / 2;
+    const escalas = [];
+    if (dx !== 0) escalas.push(halfW / Math.abs(dx));
+    if (dy !== 0) escalas.push(halfH / Math.abs(dy));
+    const escala = Math.min(...escalas);
+    return { x: cx + dx * escala, y: cy + dy * escala };
+  }
+
+  function svgNo(no) {
+    const estilo = FLUXO_ESTILO[no.tipo] || FLUXO_ESTILO.processo;
+    let forma = "";
+    if (estilo.forma === "diamante") {
+      const cx = no.x + no.w / 2;
+      const cy = no.y + no.h / 2;
+      const pontos = `${cx},${no.y} ${no.x + no.w},${cy} ${cx},${no.y + no.h} ${no.x},${cy}`;
+      forma = `<polygon points="${pontos}" fill="${estilo.fill}" stroke="${estilo.stroke}" stroke-width="1.5" />`;
+    } else {
+      const rx = estilo.forma === "pilula" ? Math.min(28, no.h / 2) : 6;
+      forma = `<rect x="${no.x}" y="${no.y}" width="${no.w}" height="${no.h}" rx="${rx}" ry="${rx}" fill="${estilo.fill}" stroke="${estilo.stroke}" stroke-width="1.5" />`;
+    }
+    const padding = 10;
+    const textoW = Math.max(10, no.w - padding * 2);
+    const textoH = Math.max(10, no.h - padding * 2);
+    return `
+      <g class="docs-fluxo__no" data-id="${no.id}" tabindex="0" role="button" aria-label="${escapeHtml(no.rotulo)}">
+        ${forma}
+        <foreignObject x="${no.x + padding}" y="${no.y + padding}" width="${textoW}" height="${textoH}">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="docs-fluxo__texto">${escapeHtml(no.rotulo)}</div>
+        </foreignObject>
+        <circle class="docs-fluxo__duvida" cx="${no.x + no.w - 4}" cy="${no.y + 4}" r="11" />
+        <text class="docs-fluxo__duvida-marca" x="${no.x + no.w - 4}" y="${no.y + 4}" text-anchor="middle" dominant-baseline="central">?</text>
+      </g>`;
+  }
+
+  function svgAresta(aresta, porId) {
+    const origem = porId[aresta.de];
+    const destino = porId[aresta.para];
+    if (!origem || !destino) return "";
+    const centroOrigem = { x: origem.x + origem.w / 2, y: origem.y + origem.h / 2 };
+    const centroDestino = { x: destino.x + destino.w / 2, y: destino.y + destino.h / 2 };
+    const p1 = pontoNaBorda(origem, centroDestino.x, centroDestino.y);
+    const p2 = pontoNaBorda(destino, centroOrigem.x, centroOrigem.y);
+    const tracejado = aresta.tracejada ? ' stroke-dasharray="5,4"' : "";
+    let rotuloSvg = "";
+    if (aresta.rotulo) {
+      const mx = (p1.x + p2.x) / 2;
+      const my = (p1.y + p2.y) / 2;
+      const largura = Math.min(220, aresta.rotulo.length * 6.4 + 10);
+      rotuloSvg = `
+        <rect x="${mx - largura / 2}" y="${my - 9}" width="${largura}" height="18" fill="var(--md-surface)" opacity="0.92" />
+        <text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" class="docs-fluxo__rotulo-aresta">${escapeHtml(aresta.rotulo)}</text>`;
+    }
+    return `
+      <g class="docs-fluxo__aresta">
+        <line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" marker-end="url(#docs-fluxo-seta)"${tracejado} />
+        ${rotuloSvg}
+      </g>`;
+  }
+
+  function montarFluxograma(containerId, dados) {
+    const container = document.getElementById(containerId);
+    if (!container || !dados) return;
+
+    const porId = {};
+    dados.nos.forEach((no) => { porId[no.id] = no; });
+
+    const svgNos = dados.nos.map(svgNo).join("\n");
+    const svgArestas = dados.arestas.map((a) => svgAresta(a, porId)).join("\n");
+
+    container.innerHTML = `
+      <div class="docs-fluxo__controles">
+        <button type="button" class="docs-util-btn" id="fluxo-anterior">◀ Anterior</button>
+        <span class="docs-fluxo__passo" id="fluxo-passo-atual">Clique num passo do diagrama, ou use os botões para um passeio guiado.</span>
+        <button type="button" class="docs-util-btn" id="fluxo-proximo">Próximo ▶</button>
+      </div>
+      <div class="docs-fluxo__canvas">
+        <svg viewBox="${dados.viewBox}" width="1650" height="1850" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="docs-fluxo-seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="docs-fluxo__seta" />
+            </marker>
+          </defs>
+          <g id="docs-fluxo-arestas">${svgArestas}</g>
+          <g id="docs-fluxo-nos">${svgNos}</g>
+        </svg>
+      </div>
+      <div class="docs-fluxo__detalhe" id="fluxo-detalhe">
+        <p class="hint">Clique num passo do fluxograma (ou no ícone ?) pra ver a explicação de verdade — o que aquele passo faz no código, e onde a implementação atual diverge do desenho original quando é o caso.</p>
+      </div>`;
+
+    const svgEl = container.querySelector("svg");
+    const detalheEl = document.getElementById("fluxo-detalhe");
+    const passoAtualEl = document.getElementById("fluxo-passo-atual");
+    let indicePasseio = -1;
+
+    function mostrarNo(id, { doPasseio = false } = {}) {
+      const no = porId[id];
+      if (!no) return;
+      container.querySelectorAll(".docs-fluxo__no--ativo").forEach((g) => g.classList.remove("docs-fluxo__no--ativo"));
+      const grupo = svgEl.querySelector(`.docs-fluxo__no[data-id="${id}"]`);
+      if (grupo) {
+        grupo.classList.add("docs-fluxo__no--ativo");
+        grupo.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      }
+      detalheEl.innerHTML = `
+        <div class="docs-fluxo__detalhe-rotulo">${escapeHtml(no.rotulo)}</div>
+        <p>${escapeHtml(no.explicacao)}</p>`;
+      if (doPasseio) {
+        indicePasseio = dados.passeio.indexOf(id);
+        passoAtualEl.textContent = `Passo ${indicePasseio + 1} de ${dados.passeio.length}`;
+      } else {
+        indicePasseio = dados.passeio.indexOf(id);
+      }
+    }
+
+    svgEl.querySelectorAll(".docs-fluxo__no").forEach((grupo) => {
+      grupo.addEventListener("click", () => mostrarNo(grupo.dataset.id, { doPasseio: true }));
+      grupo.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          mostrarNo(grupo.dataset.id, { doPasseio: true });
+        }
+      });
+    });
+
+    document.getElementById("fluxo-proximo").addEventListener("click", () => {
+      const proximo = (indicePasseio + 1 + dados.passeio.length) % dados.passeio.length;
+      mostrarNo(dados.passeio[proximo], { doPasseio: true });
+    });
+    document.getElementById("fluxo-anterior").addEventListener("click", () => {
+      const anterior = (indicePasseio - 1 + dados.passeio.length) % dados.passeio.length;
+      mostrarNo(dados.passeio[anterior], { doPasseio: true });
+    });
   }
 
   // --- arvore de pastas/arquivos do projeto (bloco tipo "arvore") ----------
@@ -226,6 +386,12 @@
         linhas.push("```" + (b.linguagem || ""), b.codigo, "```", "");
       } else if (b.tipo === "arvore") {
         linhas.push("```", arvoreParaTexto(b.dados, "").trimEnd(), "```", "");
+      } else if (b.tipo === "fluxograma") {
+        b.dados.passeio.forEach((id) => {
+          const no = b.dados.nos.find((n) => n.id === id);
+          if (no) linhas.push(`- **${no.rotulo}** — ${no.explicacao}`);
+        });
+        linhas.push("");
       }
     });
     return linhas.join("\n");
@@ -285,6 +451,8 @@
         </div>`;
       const blocoArvore = art.blocos.find((b) => b.tipo === "arvore");
       if (blocoArvore) montarArvoreArquivos("docs-arvore-arquivos", blocoArvore.dados);
+      const blocoFluxo = art.blocos.find((b) => b.tipo === "fluxograma");
+      if (blocoFluxo) montarFluxograma("docs-fluxograma", blocoFluxo.dados);
       renderToc();
     }
 

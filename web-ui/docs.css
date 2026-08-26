@@ -300,3 +300,74 @@
 }
 .docs-arvore-fs__linha:hover .docs-arvore-fs__copiar { opacity: 1; }
 .docs-arvore-fs__copiar:hover { background: var(--md-surface-variant); }
+
+/* Fluxograma interativo do agente (bloco tipo "fluxograma") */
+.docs-fluxo { max-width: 900px; margin-bottom: 22px; }
+.docs-fluxo__controles {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--md-surface-variant);
+  border-bottom: none;
+  border-radius: var(--md-radius-m) var(--md-radius-m) 0 0;
+  background: var(--md-background);
+}
+.docs-fluxo__passo { flex: 1; font-size: 12.5px; color: var(--md-on-surface-variant); text-align: center; }
+.docs-fluxo__canvas {
+  border: 1px solid var(--md-surface-variant);
+  border-top: none;
+  max-height: 560px;
+  overflow: auto;
+  background: var(--md-surface);
+}
+.docs-fluxo__canvas svg { display: block; }
+.docs-fluxo__no { cursor: pointer; }
+.docs-fluxo__no:focus { outline: none; }
+.docs-fluxo__no:focus rect, .docs-fluxo__no:focus polygon { stroke-width: 3; }
+.docs-fluxo__no--ativo rect, .docs-fluxo__no--ativo polygon {
+  stroke: var(--md-primary);
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 4px rgba(91,79,240,0.5));
+}
+.docs-fluxo__texto {
+  font-family: var(--md-font);
+  font-size: 11px;
+  line-height: 1.3;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.docs-fluxo__duvida {
+  fill: var(--md-primary);
+  stroke: var(--md-surface);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+.docs-fluxo__duvida-marca {
+  fill: var(--md-on-primary);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+  user-select: none;
+}
+.docs-fluxo__seta { fill: var(--md-on-surface-variant); }
+.docs-fluxo__aresta line { stroke: var(--md-on-surface-variant); stroke-width: 1.3; fill: none; }
+.docs-fluxo__rotulo-aresta { font-size: 10px; fill: var(--md-on-surface-variant); font-family: var(--md-font); }
+.docs-fluxo__detalhe {
+  border: 1px solid var(--md-surface-variant);
+  border-top: none;
+  border-radius: 0 0 var(--md-radius-m) var(--md-radius-m);
+  padding: 14px 16px;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  min-height: 60px;
+}
+.docs-fluxo__detalhe .hint { color: var(--md-on-primary-container); opacity: 0.85; margin: 0; }
+.docs-fluxo__detalhe-rotulo { font-weight: 800; margin-bottom: 6px; }
+.docs-fluxo__detalhe p { margin: 0; font-size: 13.5px; line-height: 1.6; }
